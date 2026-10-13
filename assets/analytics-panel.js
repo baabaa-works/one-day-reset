@@ -1,6 +1,6 @@
 (() => {
   const a=window.ResetAnalytics;
-  const labels={threads:'Threads',instagram:'Instagram',other:'其他',direct:'直接'};
+  const labels={threads:'Threads',instagram:'Instagram',share:'朋友分享',other:'其他',direct:'直接'};
   const ratio=(n,d)=>d?`${Math.round(n/d*100)}%`:'—';
   const count=(row,name)=>row.sessions?.[name]||0;
   const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

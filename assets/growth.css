@@ -4,6 +4,10 @@
 .growth-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:60px}
 .growth-logo{font-size:18px;font-weight:750;letter-spacing:-.5px;text-decoration:none}
 .growth-logo span{display:inline-grid;place-items:center;border:2px solid var(--forest);width:28px;height:28px;border-radius:50%;margin-right:10px}
+.growth-logo{display:inline-flex;align-items:center;min-height:44px}
+.g-invitation{border-left:3px solid #718f59;padding-left:12px;color:#3c4c42}
+#growth textarea::placeholder{color:#53665a}
+#growth .g-note a{display:inline-flex;align-items:center;min-height:44px}
 #growth button{border:0;font-weight:650;min-height:48px;border-radius:12px;padding:12px 20px;font-size:16px}
 #growth .g-primary{background:var(--forest);color:white}
 #growth .g-secondary{background:var(--white);color:var(--forest);border:1px solid #becdb4}

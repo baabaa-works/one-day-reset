@@ -33,7 +33,9 @@
     root.querySelector('h1, h2')?.focus({preventScroll:true});
   }
   function home() {
-    return `<div class="g-hero"><div><p>給最近有點迷路的自己</p><h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><p class="g-intro">用三個問題，把心裡的模糊寫清楚。<br>看見現況，再留下一個這週能做的小行動。</p><div class="g-actions">${button('start', answers.some(Boolean) ? '繼續我的人生快照' : '開始 90 秒人生快照','g-primary')}</div><p class="g-note">約 90 秒起步，按自己的步調寫。免費、免登入。<br>回答只留在此瀏覽器，不會自動分享。</p></div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>有什麼不滿，<br>你已經把它當成<br>生活的正常部分？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','分享給朋友','g-link')}</footer>${window.resetPrivacySettings()}`;
+    const medium = new URLSearchParams(location.search).get('utm_medium');
+    const invited = medium === 'share' || medium === 'friend';
+    return `<div class="g-hero"><div>${invited?'<p class="g-invitation">朋友邀請你做一個 90 秒的小練習</p>':''}<h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><div class="g-actions">${button('start','開始 90 秒快照','g-primary')}</div><p class="g-note">免登入、答案只留在你的手機</p><p class="g-intro">三個問題，留下一個這週能做的小行動。<br>沒有 AI 替你回答，答案是你自己的。</p>${answers.some(Boolean)?'<p class="g-note">上次的回答還在，可以繼續或修改。約 90 秒起步，按自己的步調寫。</p>':''}</div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>哪件小事，<br>你想在這一週<br>替自己留一點空間？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','分享給朋友','g-link')}${button('workbench','到完整工作台繼續','g-link')}</footer><p class="g-note">靈感來自 <a href="https://letters.thedankoe.com/p/how-to-fix-your-entire-life-in-1" target="_blank" rel="noopener noreferrer">Dan Koe</a>，非官方、非授權的獨立工具。</p>${window.resetPrivacySettings()}`;
   }
   function quick() {
     const q = questions[step];
@@ -135,9 +137,6 @@
     if(event.target.id==='g-format'){format=event.target.value;render();}
   });
   const entry=document.createElement('button');entry.className='g-workbench-home';entry.textContent='90 秒快照與分享卡';entry.addEventListener('click',()=>show('home'));document.querySelector('.main-inner').prepend(entry);
-  const old=read('one-day-reset-tw-v1');
-  const hasWork=old && (['morning','evening','dayNotes','bonus'].some(key=>Object.values(old[key]||{}).some(value=>typeof value==='string'&&value.trim())) || old.constraints || (Array.isArray(old.quests)&&old.quests.some(q=>q?.text)) || Object.values(old.dayDone||{}).some(Boolean));
-  if(!hasWork || location.hash==='#snapshot')show('home');
-  // Shared links start at the first question without exposing anything in URLs.
-  if(location.hash==='#snapshot'){step=0;track('snapshot_start');show('quick');}
+  // Every entry shows the promise and explicit start; workbench data stays intact.
+  show('home');
 })();

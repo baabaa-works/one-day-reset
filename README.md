@@ -12,6 +12,8 @@ node scripts/preview.cjs
 
 開啟 http://127.0.0.1:4173/ 。直接進入快照使用 `/?utm_source=threads&utm_medium=social&utm_campaign=snapshot#snapshot`。也可直接開啟 `index.html`，但剪貼簿與原生分享能力依瀏覽器／安全環境而異。GitHub Pages 可直接發布這些靜態檔案，沒有 build 步驟。公開站點：https://baabaa-works.github.io/one-day-reset/ 。
 
+第二輪入口：根網址與 `#snapshot` 都先顯示「開始 90 秒快照」，點擊後進題目。舊工作台可由「完整工作台」繼續。短網址 `/?s=th-a#snapshot` 對應 Threads / snapshot / post-a；另有 th-b、ig-a，完整 UTM 優先。朋友邀請入口接受 `utm_medium=friend` 或舊版 `share`，網址不含回答。
+
 ## 私人資料與分享
 
 - 原工作台 key 與 JSON 格式保持 `one-day-reset-tw-v1`，不遷移、不覆寫。
@@ -31,6 +33,8 @@ node scripts/preview.cjs
 node --check assets/growth.js
 node --check scripts/preview.cjs
 node tests/analytics-check.cjs
+playwright-cli run-code --filename=tests/entry-v2.js
+playwright-cli eval "window.entryV2Report"
 playwright-cli open http://127.0.0.1:4173 --browser=msedge
 playwright-cli run-code --filename=tests/browser-flow.js
 playwright-cli eval "window.testReport"

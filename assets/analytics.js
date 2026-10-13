@@ -3,20 +3,22 @@
   const KEY='one-day-reset-analytics-v1', SESSION='one-day-reset-analytics-session-v1', CONSENT='one-day-reset-analytics-consent-v1';
   const config=window.RESET_ANALYTICS_CONFIG;
   const events=['visit_started','snapshot_started','snapshot_completed','card_generated','share_intent','native_share_resolved','native_share_cancelled','native_share_failed','image_download_started','text_copied','link_copied','workbench_entered','snapshot_workbench_entered'];
-  const origins=['threads','instagram','other','direct'];
+  const origins=['threads','instagram','share','other','direct'];
   const properties={entry:['home','quick','result','share'],card_type:['question','personal'],format:['feed','story'],channel:['threads','instagram']};
   let memory={}, sessionMemory=null;
   function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch{return fallback;}}
   function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
   function sourceOf(params) {
     const raw=(params.get('utm_source')||params.get('source')||'').toLowerCase();
-    if(raw==='threads')return 'threads';if(raw==='ig'||raw==='instagram')return 'instagram';if(raw)return 'other';
+    if(raw==='threads')return 'threads';if(raw==='ig'||raw==='instagram')return 'instagram';if(raw==='share')return 'share';if(raw)return 'other';
     try {const host=new URL(document.referrer).hostname.toLowerCase();if(host==='threads.net'||host.endsWith('.threads.net')||host==='threads.com'||host.endsWith('.threads.com'))return 'threads';if(host==='instagram.com'||host.endsWith('.instagram.com'))return 'instagram';if(host!==location.hostname)return 'other';}catch{}
     return 'direct';
   }
   function attribution(){
     const p=new URLSearchParams(location.search);
-    return {source:sourceOf(p),medium:p.get('utm_medium')==='social'?'social':'none',campaign:config.campaigns.includes(p.get('utm_campaign'))?p.get('utm_campaign'):'unregistered',content:config.contents.includes(p.get('utm_content'))?p.get('utm_content'):'unregistered'};
+    const short=config.shortLinks?.[p.get('s')];
+    if(short)for(const [key,value]of Object.entries({utm_source:short.source,utm_medium:'social',utm_campaign:short.campaign,utm_content:short.content}))if(!p.has(key))p.set(key,value);
+    return {source:sourceOf(p),medium:['social','friend','share'].includes(p.get('utm_medium'))?p.get('utm_medium'):'none',campaign:config.campaigns.includes(p.get('utm_campaign'))?p.get('utm_campaign'):'unregistered',content:config.contents.includes(p.get('utm_content'))?p.get('utm_content'):'unregistered'};
   }
   const incoming=attribution();
   const groupOf=a=>[a.source,a.medium,a.campaign,a.content].join('|');
@@ -35,7 +37,7 @@
     const old=read(KEY,memory), result={version:1,groups:{}};
     for(const [key,row]of Object.entries(old?.groups||{}).slice(0,100)){
       const [source,medium,campaign,content]=key.split('|');
-      if(!origins.includes(source)||!['social','none'].includes(medium)||(!config.campaigns.includes(campaign)&&campaign!=='unregistered')||(!config.contents.includes(content)&&content!=='unregistered'))continue;
+      if(!origins.includes(source)||!['social','friend','share','none'].includes(medium)||(!config.campaigns.includes(campaign)&&campaign!=='unregistered')||(!config.contents.includes(content)&&content!=='unregistered'))continue;
       const cleaned={actions:{},sessions:{}};
       for(const type of ['actions','sessions'])for(const event of events){const n=row?.[type]?.[event];if(Number.isSafeInteger(n)&&n>=0)cleaned[type][event]=n;}
       result.groups[key]=cleaned;

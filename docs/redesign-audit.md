@@ -71,3 +71,7 @@
 首屏：承諾 → 開始 → 免登入與本機信任 → 無 AI 代答 → 次要工作台與來源。結果：原話／身份句 → LINE 邀請 → 可編輯邀請與其他分享 → 私人回答備援 → 工作台。
 
 分享參數衝突依更具體 D 規則：產出 `source=share, medium=friend, campaign=snapshot`；收件入口同時接受 B 的舊 `medium=share`。不對私人文字做 AI 改寫。個人卡只有使用者明確選擇並確認後可匯出；邀請文字與 LINE URL 一律通用且不帶回答。
+
+## B 驗證
+
+首屏／短參數／邀請／舊回答保留 57 項 Playwright 斷言通過；Node analytics 不變量、growth.js 與 analytics.js 語法、diff 檢查通過。`test-results/after-b-{360|390}-entry-{0|1|2}.png` 已視覺檢查。既有完整流程的入口期待值將在後續三題／分享改動後一起更新，H 階段仍須全數通過。
