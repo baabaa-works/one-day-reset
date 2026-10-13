@@ -75,3 +75,7 @@
 ## B 驗證
 
 首屏／短參數／邀請／舊回答保留 57 項 Playwright 斷言通過；Node analytics 不變量、growth.js 與 analytics.js 語法、diff 檢查通過。`test-results/after-b-{360|390}-entry-{0|1|2}.png` 已視覺檢查。既有完整流程的入口期待值將在後續三題／分享改動後一起更新，H 階段仍須全數通過。
+
+## C 驗證
+
+三題 v2 的任一題跳過、留白結果、兩標籤上限、不代答、起手句可改、身份／時間／步驟暫存、返回、身份結果與空身份退回、私人行動 ICS、兩尺寸無溢出、網址／分析無回答通過。calendar Node 驗證涵蓋日期／時間無效值、午夜跨日、UTF-8 75 octet 折行、跳脫、Asia/Taipei 與實際下載行動文字。快照仍用同 key 與 answers 陣列，只新增 tags、identity、scheduledAt、step。D/E 再補受限下載與記憶體備援。

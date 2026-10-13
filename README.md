@@ -33,8 +33,11 @@ node scripts/preview.cjs
 node --check assets/growth.js
 node --check scripts/preview.cjs
 node tests/analytics-check.cjs
+node tests/calendar-check.cjs
 playwright-cli run-code --filename=tests/entry-v2.js
 playwright-cli eval "window.entryV2Report"
+playwright-cli run-code --filename=tests/snapshot-v2.js
+playwright-cli eval "window.snapshotV2Report"
 playwright-cli open http://127.0.0.1:4173 --browser=msedge
 playwright-cli run-code --filename=tests/browser-flow.js
 playwright-cli eval "window.testReport"

@@ -5,22 +5,27 @@
   const DRAFT = 'one-day-reset-snapshot-v1';
   const analytics = window.ResetAnalytics;
   const questions = [
-    ['看見現況', '有什麼不滿，你已經把它當成生活的正常部分？', '挑一件最近常出現的小事就好。先看見它，不急著責怪自己。', '例如：下班後明明很累，還是一直滑手機。'],
-    ['靠近想要的生活', '如果能改變一件事，你希望日常多出什麼？', '想像一個普通的平日。哪個時刻，會讓你覺得這是自己想過的生活？', '例如：晚上留半小時，做一件只是因為喜歡的事。'],
-    ['留下一個起點', '這一週，你願意先做哪個小行動？', '寫下「什麼時候、做什麼」。小到可以開始，就有價值。', '例如：週三晚餐後，散步十分鐘，不帶耳機。']
+    ['看見現況', '你已經習慣忍受的一件事', '最近哪個生活情境，常讓你默默耗掉力氣？挑一件小事，補一句自己的話就好。', '例如：下班後還在看工作訊息。'],
+    ['靠近想要的生活', '三年後，某個普通的星期二', '用一兩句留下具體畫面：在哪裡醒來、做什麼、心情如何？不用先解決所有現實限制。', '我在＿＿醒來，今天＿＿，心裡覺得＿＿。'],
+    ['留下一個起點', '如果你已經是那樣的人，這週你會做的一件小事', '想一件能替那個畫面留出一點空間的事。小到願意開始就好。', '這週我先＿＿。']
   ];
   const escape = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
   const saved = read(DRAFT);
   let answers = questions.map((_, i) => typeof saved?.answers?.[i] === 'string' ? saved.answers[i].slice(0, 500) : '');
-  let step = 0, screen = 'home', returnScreen = 'home';
+  const tags=['一直很忙','很少休息','方向模糊','先顧別人','事情拖著'];
+  const starters=[[],['我在＿＿醒來，接著＿＿，心裡覺得＿＿。','一個普通的星期二，我想留時間給＿＿。'],['這週我會留十分鐘，先＿＿。','我會在＿＿之後，試一次＿＿。','這週我先把＿＿縮成一個小步驟。']];
+  let selectedTags=Array.isArray(saved?.tags)?saved.tags.filter(t=>tags.includes(t)).slice(0,2):[];
+  let identity=typeof saved?.identity==='string'?saved.identity.slice(0,120):'';
+  let scheduledAt=typeof saved?.scheduledAt==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(saved.scheduledAt)?saved.scheduledAt:'';
+  let step = Number.isInteger(saved?.step)?Math.max(0,Math.min(2,saved.step)):0, screen = 'home', returnScreen = 'home';
   let mode = 'question', personal = '', platform = 'threads', format = 'feed', imageFile = null, imageVersion = 0;
   function track(event) {
     const names={snapshot_start:'snapshot_started',snapshot_complete:'snapshot_completed',share_intent:'share_intent',native_share_resolved:'native_share_resolved',native_share_cancel:'native_share_cancelled',native_share_error:'native_share_failed',image_download:'image_download_started',text_copy:'text_copied',link_copy:'link_copied',workbench_enter:'workbench_entered'};
     if(names[event])analytics.track(names[event],{entry:screen,card_type:mode,format,channel:platform});
   }
   function saveDraft() {
-    try { localStorage.setItem(DRAFT, JSON.stringify({answers})); return true; } catch { return false; }
+    try { localStorage.setItem(DRAFT, JSON.stringify({answers,tags:selectedTags,identity,scheduledAt,step})); return true; } catch { return false; }
   }
   function status(message) { const target = root.querySelector('#g-status'); if (target) target.textContent = message; }
   const button = (action, label, cls = 'g-secondary') => `<button type="button" class="${cls}" data-g="${action}">${label}</button>`;
@@ -39,10 +44,15 @@
   }
   function quick() {
     const q = questions[step];
-    return `<div class="g-flow"><p>人生快照 · ${step + 1} / 3</p><div class="g-progress" aria-hidden="true">${questions.map((_,i)=>`<span class="${i<=step?'active':''}"></span>`).join('')}</div><h2 tabindex="-1">${q[1]}</h2><p>${q[2]}</p><div class="g-paper"><label for="g-answer">${q[0]}，用自己的話寫</label><textarea id="g-answer" maxlength="500" placeholder="${q[3]}">${escape(answers[step])}</textarea><p class="g-note">只給自己看 · 最多 500 字 · 可回上一題修改</p><p id="g-status" class="g-warning" role="status"></p></div><div class="g-actions">${button(step?'back':'home',step?'上一題':'先回首頁')}${button('next',step===2?'整理我的快照':'下一題','g-primary')}</div><p class="g-note">可以先離開，回答會保留在此瀏覽器。這不是倒數計時，也沒有標準答案。</p></div>`;
+    const starting=step===0?`<fieldset class="g-tags"><legend>可選標籤：只當起手式，最多兩個，也可以略過</legend>${tags.map((tag,i)=>`<button type="button" class="g-secondary" data-g="tag" data-index="${i}" aria-pressed="${selectedTags.includes(tag)}">${tag}</button>`).join('')}</fieldset>`:`<details class="g-starters"><summary>可選範例：點一下帶入開頭，文字都能改</summary>${starters[step].map((text,i)=>`<button type="button" class="g-secondary" data-g="starter" data-index="${i}">${text}</button>`).join('')}</details>`;
+    const extras=step===2?`<label for="g-identity">可選身份句：我是會＿＿的人</label><input id="g-identity" type="text" maxlength="120" value="${escape(identity)}" placeholder="例如：留時間給自己"><label for="g-when">預計何時做（可選）</label><input id="g-when" type="datetime-local" value="${escape(scheduledAt)}"><p class="g-note">整理後可加入行事曆；不要求通知權限。</p>`:'';
+    return `<div class="g-flow"><p>人生快照 · ${step + 1} / 3</p><p class="g-note">沒有對錯，不會有 AI 替你寫答案。任何一題都可以跳過。</p><div class="g-progress" aria-hidden="true">${questions.map((_,i)=>`<span class="${i<=step?'active':''}"></span>`).join('')}</div><h2 tabindex="-1">${q[1]}</h2><p>${q[2]}</p><div class="g-paper">${starting}<label for="g-answer">${q[0]}，用自己的話寫（可選）</label><textarea id="g-answer" maxlength="500" placeholder="${q[3]}">${escape(answers[step])}</textarea>${extras}<p class="g-note">只給自己看 · 最多 500 字 · 可回上一題修改</p><p id="g-status" class="g-warning" role="status"></p></div><div class="g-actions">${button(step?'back':'home',step?'上一題':'先回首頁')}${button('next',step===2?'整理我的快照':'下一題','g-primary')}${button('skip',step===2?'先留白，看看結果':'跳過這一題','g-link')}</div><p class="g-note">回答自動暫存於此瀏覽器；若儲存受限，離開前可複製回答。</p></div>`;
   }
+  const short = text => Array.from(text).slice(0,160).join('')+(Array.from(text).length>160?'…':'');
+  const identityLine = () => identity.trim()?(/^我是會.*的人[。]?$/s.test(identity.trim())?identity:`我是會${identity}的人`):'';
+  const snapshotLine = () => identityLine()?`${identityLine()}\n這週我先：${short(answers[2])||'（先留白）'}。`:`最近的我：${short(answers[0])||'（先留白）'}。我想靠近：${short(answers[1])||'（先留白）'}。這週我先：${short(answers[2])||'（先留白）'}。`;
   function result() {
-    return `<div class="g-flow"><p>你的 90 秒人生快照</p><h1 tabindex="-1">把下一步，<br>留給這週的自己。</h1><p>你已寫下現況、想靠近的生活與一個行動。回頭讀一次：這個行動，真的能讓你靠近第二題嗎？</p><div class="g-paper"><dl class="g-summary">${questions.map((q,i)=>`<dt>${q[0]}</dt><dd>${escape(answers[i])}</dd>`).join('')}</dl></div><div class="g-actions">${button('share','製作分享卡','g-primary')}${button('workbench','進入完整工作台')}${button('edit','修改快照','g-link')}</div><p class="g-note">分享是選擇，快照可以只留給自己。完整工作台有 28 個節點，你的舊紀錄會保留；快照不覆蓋原本答案。</p><div class="g-actions">${button('draft-export','下載私人快照')}${button('draft-clear','清除私人快照')}</div><p id="g-status" role="status"></p></div>`;
+    return `<div class="g-flow"><p>你的 90 秒人生快照</p><h1 tabindex="-1">把下一步，<br>留給這週的自己。</h1><p>讀讀自己的原話，看看這週的小事是否靠近你想要的畫面。留白的地方，可以日後再想。</p><div class="g-paper"><p class="g-result-line" id="g-result-line">${escape(snapshotLine())}</p><dl class="g-summary">${questions.map((q,i)=>`<dt>${q[0]}</dt><dd>${escape(answers[i]||'（先留白）')}</dd>`).join('')}</dl></div>${scheduledAt?`<div class="g-actions">${button('action-calendar','為這件小事加行事曆提醒')}</div><p class="g-note">提醒檔含你的行動文字，只在點擊後產生；請自行匯入日曆。</p>`:''}<div class="g-actions">${button('share','製作分享卡','g-primary')}${button('workbench','帶到完整工作台')}${button('edit','修改快照','g-link')}</div><p class="g-note">分享是選擇，快照可以只留給自己。完整工作台有 28 個節點，你的舊紀錄會保留；快照不覆蓋原本答案。</p><div class="g-actions">${button('draft-export','下載私人快照')}${button('draft-clear','清除私人快照')}</div><p id="g-status" role="status"></p></div>`;
   }
   const cardText = () => mode === 'personal' ? personal : '有什麼不滿，你已經把它當成生活的正常部分？';
   function shareURL() {
@@ -111,8 +121,10 @@
     switch(target.dataset.g){
       case 'home':show('home');break;
       case 'start':track('snapshot_start');show('quick');break;
-      case 'back':step=Math.max(0,step-1);show('quick');break;
-      case 'next':if(!answers[step].trim()){status('寫下一句就好，讓這份快照對你有意義。');document.getElementById('g-answer').focus();break;}if(step<2){step++;show('quick');}else{track('snapshot_complete');show('result');}break;
+      case 'back':step=Math.max(0,step-1);saveDraft();show('quick');break;
+      case 'next':case 'skip':if(step<2){step++;saveDraft();show('quick');}else{saveDraft();track('snapshot_complete');show('result');}break;
+      case 'tag':{const tag=tags[Number(target.dataset.index)];if(selectedTags.includes(tag))selectedTags=selectedTags.filter(t=>t!==tag);else if(selectedTags.length<2)selectedTags.push(tag);else{status('最多選兩個標籤，也可以直接寫自己的話。');break;}saveDraft();target.setAttribute('aria-pressed',String(selectedTags.includes(tag)));break;}
+      case 'starter':{const text=starters[step][Number(target.dataset.index)];if(answers[step]&&!confirm('要用可編輯範例替換這一題的文字嗎？'))break;answers[step]=text;document.getElementById('g-answer').value=text;document.getElementById('g-answer').focus();saveDraft();status('這是可選範例，請改成自己的話。');break;}
       case 'edit':step=0;show('quick');break;
       case 'share':returnScreen=screen==='result'?'result':'home';track('share_intent');mode='question';personal='';show('share');break;
       case 'return':personal='';imageFile=null;show(returnScreen);break;
@@ -121,14 +133,16 @@
       case 'download':if(validCard()){track('share_intent');if(imageFile){download(imageFile.name,imageFile);track('image_download');status('已啟動圖片下載。若內建瀏覽器未儲存，請用系統瀏覽器開啟後再下載。');}else status('圖片正在準備，請稍後再按一次。');}break;
       case 'copy-text':if(validCard()){track('share_intent');copy(caption(),'text_copy');}break;
       case 'copy-link':track('share_intent');copy(shareURL(),'link_copy');break;
-      case 'draft-export':download('私人人生快照.json',new Blob([JSON.stringify({format:DRAFT,answers},null,2)],{type:'application/json'}));break;
-      case 'draft-clear':if(confirm('清除三題私人快照？完整工作台不受影響。')){answers=['','',''];step=0;try{localStorage.removeItem(DRAFT);}catch{}show('home');}break;
+      case 'action-calendar':try{const [date,time]=scheduledAt.split('T');download('我的小行動.ics',new Blob([window.ResetCalendar.calendar([{date,time,title:'這週我先：'+(answers[2]||'留時間給自己'),description:answers[2]||'回到快照，想一件願意開始的小事。'}])],{type:'text/calendar;charset=utf-8'}));}catch{status('請回第三題選擇有效的日期與時間。');}break;
+      case 'draft-export':download('私人人生快照.json',new Blob([JSON.stringify({format:DRAFT,answers,tags:selectedTags,identity,scheduledAt,step},null,2)],{type:'application/json'}));break;
+      case 'draft-clear':if(confirm('清除三題私人快照？完整工作台不受影響。')){answers=['','',''];identity='';scheduledAt='';selectedTags=[];step=0;try{localStorage.removeItem(DRAFT);}catch{}show('home');}break;
       case 'metrics-export':download('本機操作統計.json',new Blob([JSON.stringify(analytics.report(),null,2)],{type:'application/json'}));break;
       case 'metrics-clear':analytics.clear();render();break;
     }
   });
   root.addEventListener('input',event=>{
     if(event.target.id==='g-answer'){answers[step]=event.target.value;status(saveDraft()?'已儲存在此瀏覽器。':'此瀏覽器無法儲存；離開前請完成並下載私人快照。');}
+    if(event.target.id==='g-identity'||event.target.id==='g-when'){if(event.target.id==='g-identity')identity=event.target.value;else scheduledAt=event.target.value;status(saveDraft()?'已儲存在此瀏覽器。':'此瀏覽器無法儲存；目前回答保留在這一頁。');}
     if(event.target.id==='g-personal'){personal=event.target.value;drawCard();status('預覽已更新，請確認分享內容。');}
   });
   root.addEventListener('change',event=>{

@@ -8,6 +8,11 @@
 .g-invitation{border-left:3px solid #718f59;padding-left:12px;color:#3c4c42}
 #growth textarea::placeholder{color:#53665a}
 #growth .g-note a{display:inline-flex;align-items:center;min-height:44px}
+#growth input[type=text],#growth input[type=datetime-local]{width:100%;max-width:100%;min-height:48px;font-size:16px;padding:10px;border:1px solid #becdb4;background:white;border-radius:8px;color:#202b25}
+.g-tags{border:0;padding:0;margin:0 0 16px}.g-tags legend{font-size:14px;margin-bottom:12px;color:#53665a}.g-tags button{margin:0 8px 8px 0}
+#growth .g-tags [aria-pressed=true]{background:#263b2c;color:white}
+#growth .g-starters{margin:0 0 16px}.g-starters button{display:block;margin:12px 0;white-space:normal;text-align:left;width:100%}
+.g-result-line{font-size:22px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700}
 #growth button{border:0;font-weight:650;min-height:48px;border-radius:12px;padding:12px 20px;font-size:16px}
 #growth .g-primary{background:var(--forest);color:white}
 #growth .g-secondary{background:var(--white);color:var(--forest);border:1px solid #becdb4}
