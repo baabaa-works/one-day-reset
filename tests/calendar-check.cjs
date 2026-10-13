@@ -21,3 +21,21 @@ if(fs.existsSync('test-results/snapshot-action.ics')) {
   assert(result.includes('DTSTART;TZID=Asia/Taipei:20261015T183700'));
 }
 console.log('PASS: calendar date/time validation, midnight rollover, UTF-8 folding, escaping, timezone and snapshot action content.');
+if(fs.existsSync('test-results/day-prompts.ics')) {
+  const result=fs.readFileSync('test-results/day-prompts.ics','utf8').replace(/\r\n /g,'');
+  assert.equal((result.match(/BEGIN:VEVENT/g)||[]).length,6);
+  assert(result.includes('SUMMARY:EDITED 公開提問？'));
+  assert(result.includes('DESCRIPTION:EDITED 公開提問？'));
+  assert(!result.includes('KEEP_PRIVATE'));
+}
+if(fs.existsSync('test-results/return-reminders.ics')) {
+  const result=fs.readFileSync('test-results/return-reminders.ics','utf8').replace(/\r\n /g,'');
+  assert.equal((result.match(/BEGIN:VEVENT/g)||[]).length,2);
+  assert(result.includes('#review'));
+  for(const q of ['哪件小事真的發生了','哪個地方和上次不同','繼續或調整哪一步'])assert(result.includes(q));
+  assert(!result.includes('PRIVATE'));
+  const dates=[...result.matchAll(/DTSTART;TZID=Asia\/Taipei:(\d{4})(\d\d)(\d\d)T/g)].map(m=>Date.UTC(+m[1],+m[2]-1,+m[3]));
+  assert.equal((dates[1]-dates[0])/86400000,23);
+}
+if(fs.existsSync('test-results/six-grid.txt'))assert(fs.readFileSync('test-results/six-grid.txt','utf8').includes('PRIVATE 行動一'));
+console.log('PASS: downloaded daytime questions, six-grid words and 7/30-day calendar content when fixtures exist.');

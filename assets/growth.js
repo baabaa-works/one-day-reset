@@ -57,7 +57,7 @@
   const identityLine = () => identity.trim()?(/^我是會.*的人[。]?$/s.test(identity.trim())?identity:`我是會${identity}的人`):'';
   const snapshotLine = () => identityLine()?`${identityLine()}\n這週我先：${short(answers[2])||'（先留白）'}。`:`最近的我：${short(answers[0])||'（先留白）'}。我想靠近：${short(answers[1])||'（先留白）'}。這週我先：${short(answers[2])||'（先留白）'}。`;
   function result() {
-    return `<div class="g-flow"><p>你的 90 秒人生快照</p><h1 tabindex="-1">把下一步，<br>留給這週的自己。</h1><p>讀讀自己的原話，看看這週的小事是否靠近你想要的畫面。留白的地方，可以日後再想。</p><div class="g-paper"><p class="g-result-line" id="g-result-line">${escape(snapshotLine())}</p><dl class="g-summary">${questions.map((q,i)=>`<dt>${q[0]}</dt><dd>${escape(answers[i]||'（先留白）')}</dd>`).join('')}</dl></div>${invitationActions()}${invitationEditor()}<div class="g-actions">${button('share','選擇分享卡')}${button('edit','修改快照','g-link')}</div>${scheduledAt?`<div class="g-actions">${button('action-calendar','為這件小事加行事曆提醒')}</div><p class="g-note">提醒檔含你的行動文字，只在點擊後產生；請自行匯入日曆。</p>`:''}<p class="g-note">換瀏覽器開啟時，這份回答不會跟著過去。離開前可複製或下載私人備份。</p><div class="g-actions">${button('copy-answers','複製我的回答')}${button('draft-export','下載私人快照')}${button('draft-clear','清除私人快照')}</div><p id="g-status" role="status"></p><div class="g-footer">${button('workbench','帶到完整工作台','g-link')}</div></div>`;
+    return `<div class="g-flow"><p>你的 90 秒人生快照</p><h1 tabindex="-1">把下一步，<br>留給這週的自己。</h1><p>讀讀自己的原話，看看這週的小事是否靠近你想要的畫面。留白的地方，可以日後再想。</p><div class="g-paper"><p class="g-result-line" id="g-result-line">${escape(snapshotLine())}</p><dl class="g-summary">${questions.map((q,i)=>`<dt>${q[0]}</dt><dd>${escape(answers[i]||'（先留白）')}</dd>`).join('')}</dl></div>${invitationActions()}${invitationEditor()}<div class="g-actions">${button('share','選擇分享卡')}${button('edit','修改快照','g-link')}</div>${scheduledAt?`<div class="g-actions">${button('action-calendar','為這件小事加行事曆提醒')}</div><p class="g-note">提醒檔含你的行動文字，只在點擊後產生；請自行匯入日曆。</p>`:''}<p class="g-note">換瀏覽器開啟時，這份回答不會跟著過去。離開前可複製或下載私人備份。</p><div class="g-actions">${button('copy-answers','複製我的回答')}${button('draft-export','下載私人快照')}${button('draft-clear','清除私人快照')}</div><p id="g-status" role="status"></p><div class="g-footer">${button('bring','帶到完整工作台','g-link')}</div></div>`;
   }
   const cardText = () => mode === 'personal' ? Array.from(personal).slice(0,360).join('')+(Array.from(personal).length>360?'…':'') : '哪件小事，你想在這一週替自己留一點空間？';
   function shareURL() {
@@ -139,6 +139,7 @@
       case 'share':returnScreen=screen==='result'?'result':'home';track('share_intent');mode='question';personal='';personalConfirmed=false;show('share');break;
       case 'return':personal='';imageFile=null;show(returnScreen);break;
       case 'workbench':workbench();break;
+      case 'bring':workbench();document.dispatchEvent(new CustomEvent('reset:snapshot-import',{detail:{answers:[...answers],identity:identityLine()}}));break;
       case 'native':nativeShare();break;
       case 'download':if(validCard()){track('share_intent');if(imageFile){const ok=download(imageFile.name,imageFile);if(ok)track('image_download');status(ok?'已啟動下載；瀏覽器無法確認是否存入相簿。若沒有收到，可長按下方圖片。':'下載未完成，可長按圖片儲存。');localUI.imagePreview(document.getElementById('g-card'));}else status('圖片正在準備，請稍後再按一次。');}break;
       case 'image-preview':if(validCard())localUI.imagePreview(document.getElementById('g-card'));break;
@@ -169,4 +170,5 @@
   const entry=document.createElement('button');entry.className='g-workbench-home';entry.textContent='90 秒快照與分享卡';entry.addEventListener('click',()=>show('home'));document.querySelector('.main-inner').prepend(entry);
   // Every entry shows the promise and explicit start; workbench data stays intact.
   show('home');
+  if(location.hash==='#review'){workbench();document.dispatchEvent(new Event('reset:review'));}
 })();

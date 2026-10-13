@@ -42,6 +42,8 @@ playwright-cli run-code --filename=tests/share-v2.js
 playwright-cli eval "window.shareV2Report"
 playwright-cli run-code --filename=tests/resilience-v2.js
 playwright-cli eval "window.resilienceV2Report"
+playwright-cli run-code --filename=tests/workbench-v2.js
+playwright-cli eval "window.workbenchV2Report"
 playwright-cli open http://127.0.0.1:4173 --browser=msedge
 playwright-cli run-code --filename=tests/browser-flow.js
 playwright-cli eval "window.testReport"
@@ -61,3 +63,11 @@ playwright-cli -s=mobile eval "window.mobileReport"
 ## 待真實使用者驗證
 
 三題是否能降低開始門檻、問題卡是否值得轉傳、快照能否帶動完整工作台，以及手機內建瀏覽器的儲存／分享相容性，都仍是待驗證假設，不能由本機測試推論成長效果。
+
+## 完整工作台第二輪
+
+28 節點與舊備份投影保留；手機早上、白天、晚上一次一題。每段可停下，提供明早續寫。白天六提醒可編輯時間與提問、可略過；ICS 標題與說明包含提問，不含筆記。下載後同時保留複製提問與逐筆加入 Google 行事曆的備援；點逐筆加入才把提問交給 Google，不會交出工作台回答。
+
+六格卡可儲存在本機、複製、下載文字與列印；空白範本圖片不含回答，可公開分享。回訪有 7／30 天提醒與 `#review` 三題入口。快照「帶到完整工作台」先預覽並確認，只填 m1／m13／m15／m14 的空欄，不覆蓋舊內容。
+
+新增本機 key：`one-day-reset-workbench-options-v1`（提醒提問、略過、單題位置、回顧），`one-day-reset-game-card-v1`（主動儲存的六格卡）。舊工作台 JSON 備份保持原格式，不包含這兩個獨立項目；六格卡請另外下載，提醒設定可匯出 ICS。沒有通知權限、推播或雲端同步。

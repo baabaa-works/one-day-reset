@@ -1,0 +1,38 @@
+async page => {
+  const checks=[];const check=(ok,label)=>{if(!ok)throw Error(label);checks.push(label);};
+  const base='http://127.0.0.1:4173/';
+  const w=action=>page.locator(`[data-w="${action}"]`).first().click();
+  await page.goto(base);await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();localStorage.setItem('one-day-reset-tw-v1',JSON.stringify({view:'morning',morning:{m1:'KEEP_PRIVATE'},evening:{e18:'PRIVATE 避開',e19:'PRIVATE 靠近',e20:'PRIVATE 年',e21:'PRIVATE 月'},constraints:'PRIVATE 底線',quests:[{text:'PRIVATE 行動一',time:'09:00'},{text:'PRIVATE 行動二',time:'10:00'}]}));});await page.reload();
+  await page.locator('[data-g="start"]').click();
+  for(const answer of ['不能覆蓋舊回答','我的三年場景','本週小事']){await page.locator('#g-answer').fill(answer);await page.locator('[data-g="next"]').click();}
+  await page.locator('[data-g="bring"]').click();check(await page.locator('#w-import').isVisible(),'Snapshot bring shows preview and confirmation');
+  check(await page.evaluate(()=>ResetWorkbench.read().morning.m13===undefined),'No mutation before confirmation');await page.locator('#w-import [data-cancel]').click();
+  await page.locator('.g-workbench-home').click();await page.locator('[data-g="start"]').click();await page.locator('[data-g="next"]').click();await page.locator('[data-g="bring"]').click();await page.locator('#w-import [data-confirm]').click();
+  check(await page.evaluate(()=>{const s=ResetWorkbench.read();return s.morning.m1==='KEEP_PRIVATE'&&s.morning.m13==='我的三年場景'&&s.morning.m15==='本週小事';}),'Confirmed bring only fills empty fields');
+  await page.setViewportSize({width:360,height:800});
+  check(await page.locator('.question-card').count()===1,'Mobile morning shows one question');check(await page.locator('.w-stop-note').isVisible(),'Heavy section permits stopping or skipping');
+  check(await page.locator('#focusedAnswer').evaluate(e=>getComputedStyle(e).fontSize==='16px'),'Workbench input prevents iOS zoom');
+  await page.locator('[data-question-number="13"]').click();await page.locator('[data-step="1"]').click();check(await page.locator('[data-w="tomorrow"]').isVisible(),'Phase end offers tomorrow continuation');
+  await page.locator('[data-w="continue"]').click();check(await page.locator('.time-card:visible').count()===1,'Mobile daytime shows one checkpoint');
+  check(await page.locator('#w-prompt-d1').inputValue()!=='','Editable daytime prompt');
+  await page.locator('#w-prompt-d1').fill('EDITED 公開提問？');
+  const calWait=page.waitForEvent('download');await page.locator('[data-action="calendar"]').click();await (await calWait).saveAs('test-results/day-prompts.ics');
+  check(await page.locator('#w-calendar-backup a').count()===6,'Six individual calendar fallback links');
+  await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied');}}});window.origDownloadClick=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download)throw Error('blocked');return window.origDownloadClick.call(this);};});
+  await page.locator('[data-action="calendar"]').click();check((await page.locator('#w-calendar-backup h2').textContent()).includes('未完成'),'ICS download failure has explicit backup');await w('copy-prompts');check((await page.locator('#reset-copy').inputValue()).includes('EDITED 公開提問？'),'All questions manual copy on denial');await page.locator('#reset-fallback button').click();
+  await page.locator('[data-w-skip="d1"]').check();await page.locator('[data-action="calendar"]').click();check(await page.locator('#w-calendar-backup a').count()===5,'Skipped reminder omitted');
+  await page.locator('#nav [data-view="plan"]').click();await w('six-save');check(await page.evaluate(()=>JSON.parse(localStorage.getItem('one-day-reset-game-card-v1')).fields.length===6),'Six-grid card saved locally');
+  await w('six-copy');check((await page.locator('#reset-copy').inputValue()).includes('PRIVATE 行動一'),'Six-grid manual copy retains own words');await page.locator('#reset-fallback button').click();
+  await page.evaluate(()=>window.print=()=>{});await w('six-print');check(await page.locator('#printSheet .print-item').count()===6,'Six-grid print produces six fields');
+  await page.emulateMedia({media:'print'});check(await page.locator('#printSheet').isVisible()&&!await page.locator('#app').isVisible(),'Six-grid printable layout');await page.emulateMedia({media:'screen'});
+  await page.evaluate(()=>{window.canvasText=[];const draw=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...rest){window.canvasText.push(text);return draw.call(this,text,...rest);};});
+  await w('blank-card');check(await page.locator('#reset-fallback img').isVisible(),'Public blank template image');
+  check(await page.evaluate(()=>!canvasText.join('').includes('PRIVATE')&&canvasText.join('').includes('?s=f#snapshot')),'Blank template draws no private content and includes short URL');await page.locator('#reset-fallback button').last().click();
+  await page.evaluate(()=>HTMLAnchorElement.prototype.click=window.origDownloadClick);
+  const sixWait=page.waitForEvent('download');await w('six-download');await (await sixWait).saveAs('test-results/six-grid.txt');check(true,'Six-grid local text download');
+  const returnWait=page.waitForEvent('download');await w('return-reminders');await (await returnWait).saveAs('test-results/return-reminders.ics');check(await page.locator('#w-calendar-backup a').count()===2,'7 and 30 day return reminders');check((await page.locator('#w-calendar-backup a').first().getAttribute('href')).includes('%23review'),'Return reminder links to review');
+  await w('review');check(await page.locator('[data-w-review]').count()===3,'Three optional local review questions');await page.locator('#w-review-0').fill('PRIVATE_REVIEW');
+  await page.goto(base+'#review');check(await page.locator('#w-review-0').inputValue()==='PRIVATE_REVIEW','Review deep link restores local words');
+  await page.locator('#nav [data-view="day"]').click();await page.setViewportSize({width:1440,height:1000});check(await page.locator('.time-card:visible').count()===6,'Desktop retains all checkpoint overview');
+  await page.evaluate(report=>window.workbenchV2Report=report,{passed:checks.length,checks});
+}
