@@ -53,4 +53,8 @@
 .app .nav-text small{opacity:1}.app textarea::placeholder,.app input::placeholder{color:#586e5c}
 .app .eyebrow,.app .qid,.app .helper-text,.app .page-mini,.app .input-label,.app .think,.app .section-label,.app .overview-card p,.app .overview-card .num,.app .counter span,.app .btn-sm,.app .sidebar-desc,.app .index-btn{font-size:14px}
 @media(max-width:770px){.growth-shell{padding:18px 20px 32px}.growth-nav{margin-bottom:30px}.growth-logo{font-size:16px}.g-hero{grid-template-columns:1fr;gap:28px}#growth h1{margin-top:6px}.g-sample{max-width:440px;min-height:320px;aspect-ratio:auto;padding:28px}.g-sample blockquote{font-size:27px}.g-footer{margin-top:38px}.g-paper{padding:22px}.g-share{grid-template-columns:1fr}.g-share canvas{max-width:360px;display:block;margin:auto}.g-progress{margin-bottom:26px}.g-actions .g-primary{flex-grow:1}.app .topbar{flex-wrap:wrap;gap:8px}.app .top-left{font-size:12px!important}}
-@media print{#growth,.g-workbench-home{display:none!important}}
+.voice-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:8px 0 4px}
+.voice-row .voice-btn,#growth .voice-row .voice-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border:1px solid #becdb4;border-radius:999px;background:#fff;color:#2a3b2f;font-size:15px;font-weight:650;cursor:pointer}
+.voice-row .voice-btn.is-listening,#growth .voice-row .voice-btn.is-listening{background:#b3402f;border-color:#b3402f;color:#fff}
+.voice-status{flex:1 1 200px;font-size:14px;line-height:1.6;color:#4b5f51}
+@media print{#growth,.g-workbench-home,.voice-row{display:none!important}}
