@@ -62,13 +62,14 @@ async page => {
   await click('copy-link');
   await page.waitForFunction(()=>window.copied.includes('#snapshot'));
   check(true,'Clipboard success works');
-  const metric=await page.evaluate(()=>JSON.parse(localStorage.getItem('one-day-reset-growth-v1')));
-  check(metric.counts.direct.snapshot_complete===1 && metric.counts.direct.native_share_resolved===1 && !JSON.stringify(metric).includes('PRIVATE'),'Local metrics separate completion, intent and system handoff');
+  const metric=await page.evaluate(()=>window.ResetAnalytics.report());
+  const direct=metric.groups['direct|none|unregistered|unregistered'];
+  check(direct.sessions.snapshot_completed===1 && direct.actions.native_share_resolved===1 && !JSON.stringify(metric).includes('PRIVATE'),'Local metrics separate completion, intent and system handoff');
   await page.goto(sharedURL);
   check(await page.locator('#g-answer').isVisible(),'Shared recipient enters quick experience directly');
-  check(await page.evaluate(()=>JSON.parse(localStorage.getItem('one-day-reset-growth-v1')).counts.instagram.snapshot_start===1),'Source attribution records Instagram');
+  check(await page.evaluate(()=>Object.entries(window.ResetAnalytics.report().groups).some(([key,row])=>key.startsWith('instagram|')&&row.sessions.snapshot_started===1)),'Source attribution records Instagram');
   await page.goto(url+'?utm_source=threads#snapshot');
-  check(await page.evaluate(()=>JSON.parse(localStorage.getItem('one-day-reset-growth-v1')).counts.threads.snapshot_start===1),'Source attribution records Threads');
+  check(await page.evaluate(()=>Object.entries(window.ResetAnalytics.report().groups).some(([key,row])=>key.startsWith('threads|')&&row.sessions.snapshot_started===1)),'Source attribution records Threads');
   const legacy={format:'one-day-reset-tw-v1',date:'2026-10-13',view:'morning',mi:0,ei:0,morning:{m1:'EXISTING_WORK'},evening:{e18:'不想繼續拖延'},dayNotes:{d1:'筆記'},dayDone:{d1:true},times:{d1:'12:00'},bonus:{b1:'保持真實'},constraints:'保留睡眠',quests:[{text:'寫第一版',time:'09:00',done:true},{text:'散步',time:'18:00',done:false},{text:'',time:'19:00',done:false}]};
   await page.evaluate(data=>localStorage.setItem('one-day-reset-tw-v1',JSON.stringify(data)),legacy);
   await page.goto(url);

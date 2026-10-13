@@ -1,0 +1,42 @@
+const vm=require('node:vm');
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const configCode=fs.readFileSync('assets/analytics-config.js','utf8');
+const code=fs.readFileSync('assets/analytics.js','utf8');
+function environment(search=''){
+  const local=new Map(),session=new Map(),requests=[];let now=0;
+  const storage=map=>({getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)});
+  const c={window:{},location:{search,href:'https://baabaa-works.github.io/one-day-reset/'+search,hostname:'baabaa-works.github.io'},document:{referrer:''},navigator:{},URL,URLSearchParams,localStorage:storage(local),sessionStorage:storage(session),Date:{now:()=>now},fetch:(url,opts)=>{requests.push({url,opts});return Promise.resolve({});}};
+  vm.createContext(c);vm.runInContext(configCode,c);vm.runInContext(code,c);
+  return {c,local,session,requests,a:c.window.ResetAnalytics,advance:ms=>{now+=ms;},reload:()=>vm.runInContext(code,c)};
+}
+const e=environment('?utm_source=threads&utm_medium=social&utm_campaign=launch_202610&utm_content=threads_question_01');
+const group='threads|social|launch_202610|threads_question_01';
+e.a.track('snapshot_started');e.a.track('snapshot_started');e.a.track('snapshot_completed');
+e.a.track('card_generated');e.a.track('share_intent');e.a.track('share_intent');e.a.track('image_download_started');e.a.track('text_copied');e.a.track('link_copied');e.a.track('snapshot_workbench_entered');
+let report=e.a.report().groups[group];
+assert.equal(report.sessions.visit_started,1);assert.equal(report.sessions.snapshot_started,1);assert.equal(report.sessions.snapshot_completed,1);assert.equal(report.actions.share_intent,2);assert.equal(report.sessions.share_intent,1);assert.equal(report.sessions.snapshot_workbench_entered,1);
+e.reload();assert.equal(e.a.report().groups[group].sessions.visit_started,1);
+e.advance(31*60*1000);e.a.track('snapshot_completed');report=e.a.report().groups[group];assert.equal(report.sessions.visit_started,2);assert.equal(report.sessions.snapshot_started,2);assert.equal(report.sessions.snapshot_completed,2);
+assert.equal(e.requests.length,0,'Default never uploads');
+const unsafe=environment('?utm_source=PRIVATE_EMAIL&utm_campaign=PRIVATE_ANSWER&utm_content=PRIVATE_GOAL');
+assert.equal(JSON.stringify(unsafe.a.report()).includes('PRIVATE'),false);
+assert.equal(unsafe.a.attribution().source,'other');assert.equal(unsafe.a.attribution().campaign,'unregistered');
+const direct=environment();direct.a.track('snapshot_workbench_entered');assert.equal(direct.a.report().groups['direct|none|unregistered|unregistered'].sessions.snapshot_workbench_entered,undefined);
+const enabled={...e.c.window.RESET_ANALYTICS_CONFIG,enabled:true,websiteId:'00000000-0000-0000-0000-000000000001'};
+e.c.window.RESET_ANALYTICS_CONFIG=enabled;e.reload();e.a=e.c.window.ResetAnalytics;
+e.a.track('share_intent');assert.equal(e.requests.length,0,'Owner configuration alone cannot send');
+e.a.consent(true);e.a.track('share_intent',{card_type:'personal',format:'story',channel:'instagram',answer:'PRIVATE_ANSWER',text:'PRIVATE_TEXT',url:'PRIVATE_URL',email:'PRIVATE_EMAIL'});
+assert.equal(e.requests.length,2); // opted-in visit denominator plus current intent
+const wire=JSON.parse(e.requests[1].opts.body);
+assert.equal(JSON.stringify(wire).includes('PRIVATE'),false);assert.equal(wire.payload.referrer,'');assert.equal(wire.payload.url,'/one-day-reset/');assert.equal(wire.payload.data.card_type,'personal');assert.equal(e.requests[0].opts.referrerPolicy,'no-referrer');assert.equal(e.requests[0].opts.credentials,'omit');
+assert.equal('id' in wire.payload,false);assert.equal('screen' in wire.payload,false);
+e.a.track('PRIVATE_UNKNOWN_EVENT');assert.equal(e.requests.length,2);
+e.c.navigator.doNotTrack='1';e.a.track('share_intent');assert.equal(e.requests.length,2);
+e.c.navigator.doNotTrack='0';e.c.navigator.globalPrivacyControl=true;e.a.track('share_intent');assert.equal(e.requests.length,2);
+e.c.navigator.globalPrivacyControl=false;e.a.consent(false);e.a.track('share_intent');assert.equal(e.requests.length,2);
+e.a.consent(true);e.c.location.hostname='localhost';e.a.track('share_intent');assert.equal(e.requests.length,2);
+assert.equal(e.a.buildLink({source:'PRIVATE',campaign:'PRIVATE',content:'PRIVATE'}).includes('PRIVATE'),false);
+e.c.localStorage.setItem=()=>{throw Error('blocked');};e.c.localStorage.getItem=()=>{throw Error('blocked');};e.c.sessionStorage.setItem=()=>{throw Error('blocked');};e.c.sessionStorage.getItem=()=>{throw Error('blocked');};e.a.track('share_intent');assert.ok(e.a.report().groups[group]);
+e.a.clear();assert.equal(Object.keys(e.a.report().groups).length,0);
+console.log('PASS: attribution, campaign visits, deduplication, idle expiry, stage denominators, local-only defaults, consent, privacy projection, DNT/GPC, hostname gate, unknown events, safe links, blocked storage, clearing.');

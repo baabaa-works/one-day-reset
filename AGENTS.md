@@ -2,13 +2,13 @@
 
 ## Project Structure & Module Organization
 
-This is a Git repository with a native HTML workbench in `index.html`, social entry UI in `assets/growth.js` and `assets/growth.css`, browser flow checks in `tests/`, and a dependency-free preview server in `scripts/preview.cjs`. Preserve the existing `one-day-reset-tw-v1` storage and backup format.
+This is a Git repository with a native HTML workbench in `index.html`, social entry UI in `assets/growth.js` and `assets/growth.css`, opt-in analytics in `assets/analytics*.js`, flow checks in `tests/`, and a dependency-free preview server in `scripts/preview.cjs`. Preserve the existing `one-day-reset-tw-v1` storage and backup format. Never transmit reflection text or enable external analytics without explicit owner consent.
 
 When adding the initial implementation, keep application code, tests, and static assets clearly separated. Suggested directories are `src/`, `tests/`, and `assets/`; these are proposed conventions, not existing paths. Document installation and local setup in `README.md`.
 
 ## Build, Test, and Development Commands
 
-Use `node scripts/preview.cjs` for local preview and `node --check assets/growth.js` for JavaScript syntax validation. Browser verification uses Playwright CLI `run-code --filename=tests/browser-flow.js` and `tests/mobile-check.js`; see README for exact commands. There is no dependency install, build, or lint step.
+Use `node scripts/preview.cjs` for local preview and `node --check assets/growth.js` for JavaScript syntax validation. Run `node tests/analytics-check.cjs` for tracking invariants. Browser verification uses Playwright CLI `run-code --filename=tests/browser-flow.js`, `tests/mobile-check.js`, and `tests/analytics-browser.js`; see README for exact commands. There is no dependency install, build, or lint step.
 
 When introducing tooling, document the exact installation, local development, build, lint, and test commands here. Commit the relevant configuration and dependency lockfile alongside the implementation.
 

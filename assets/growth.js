@@ -3,11 +3,7 @@
   const root = document.getElementById('growth');
   const app = document.getElementById('app');
   const DRAFT = 'one-day-reset-snapshot-v1';
-  const METRICS = 'one-day-reset-growth-v1';
-  const sources = ['threads', 'instagram', 'direct'];
-  const params = new URLSearchParams(location.search);
-  const rawSource = params.get('utm_source') || params.get('source');
-  const source = rawSource === 'ig' ? 'instagram' : sources.includes(rawSource) ? rawSource : 'direct';
+  const analytics = window.ResetAnalytics;
   const questions = [
     ['看見現況', '有什麼不滿，你已經把它當成生活的正常部分？', '挑一件最近常出現的小事就好。先看見它，不急著責怪自己。', '例如：下班後明明很累，還是一直滑手機。'],
     ['靠近想要的生活', '如果能改變一件事，你希望日常多出什麼？', '想像一個普通的平日。哪個時刻，會讓你覺得這是自己想過的生活？', '例如：晚上留半小時，做一件只是因為喜歡的事。'],
@@ -17,25 +13,11 @@
   const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
   const saved = read(DRAFT);
   let answers = questions.map((_, i) => typeof saved?.answers?.[i] === 'string' ? saved.answers[i].slice(0, 500) : '');
-  let step = 0, started = false, completed = false, screen = 'home', returnScreen = 'home';
+  let step = 0, screen = 'home', returnScreen = 'home';
   let mode = 'question', personal = '', platform = 'threads', format = 'feed', imageFile = null, imageVersion = 0;
   function track(event) {
-    // Allow-listed counters only. No answers, URLs, identity, or timestamps.
-    const allowed = ['visit', 'snapshot_start', 'snapshot_complete', 'share_intent', 'native_share_resolved', 'native_share_cancel', 'native_share_error', 'image_download', 'text_copy', 'link_copy', 'workbench_enter'];
-    if (!allowed.includes(event)) return;
-    try {
-      const old = read(METRICS);
-      const data = {version: 1, counts: {}};
-      for (const src of sources) {
-        data.counts[src] = {};
-        for (const key of allowed) {
-          const n = old?.counts?.[src]?.[key];
-          if (Number.isSafeInteger(n) && n >= 0) data.counts[src][key] = n;
-        }
-      }
-      data.counts[source][event] = (data.counts[source][event] || 0) + 1;
-      localStorage.setItem(METRICS, JSON.stringify(data));
-    } catch { /* Product remains usable without storage. */ }
+    const names={snapshot_start:'snapshot_started',snapshot_complete:'snapshot_completed',share_intent:'share_intent',native_share_resolved:'native_share_resolved',native_share_cancel:'native_share_cancelled',native_share_error:'native_share_failed',image_download:'image_download_started',text_copy:'text_copied',link_copy:'link_copied',workbench_enter:'workbench_entered'};
+    if(names[event])analytics.track(names[event],{entry:screen,card_type:mode,format,channel:platform});
   }
   function saveDraft() {
     try { localStorage.setItem(DRAFT, JSON.stringify({answers})); return true; } catch { return false; }
@@ -51,7 +33,7 @@
     root.querySelector('h1, h2')?.focus({preventScroll:true});
   }
   function home() {
-    return `<div class="g-hero"><div><p>給最近有點迷路的自己</p><h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><p class="g-intro">用三個問題，把心裡的模糊寫清楚。<br>看見現況，再留下一個這週能做的小行動。</p><div class="g-actions">${button('start', answers.some(Boolean) ? '繼續我的人生快照' : '開始 90 秒人生快照','g-primary')}</div><p class="g-note">約 90 秒起步，按自己的步調寫。免費、免登入。<br>回答只留在此瀏覽器，不會自動分享。</p></div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>有什麼不滿，<br>你已經把它當成<br>生活的正常部分？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','把這個問題送給朋友','g-link')}</footer><details><summary>隱私與這台裝置的使用統計</summary><p>快照與工作台分開儲存。分享卡不讀取私人回答；個人卡要由你另外輸入。清除瀏覽器資料會刪除紀錄，內建瀏覽器與一般瀏覽器的資料可能不同。完整工作台支援 JSON 備份。</p><p>下方僅是本機操作次數，依進站來源分類；不含反思內容，不送至伺服器，也無法證明社群貼文已發布。</p><pre>${escape(JSON.stringify(read(METRICS)?.counts || {}, null, 2))}</pre>${button('metrics-export','下載本機統計')}${button('metrics-clear','清除本機統計')}<p>想法需要更多時間？可使用依 Dan Koe 流程整理的完整工作台。這是自我反思工具，不提供心理評分。</p></details>`;
+    return `<div class="g-hero"><div><p>給最近有點迷路的自己</p><h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><p class="g-intro">用三個問題，把心裡的模糊寫清楚。<br>看見現況，再留下一個這週能做的小行動。</p><div class="g-actions">${button('start', answers.some(Boolean) ? '繼續我的人生快照' : '開始 90 秒人生快照','g-primary')}</div><p class="g-note">約 90 秒起步，按自己的步調寫。免費、免登入。<br>回答只留在此瀏覽器，不會自動分享。</p></div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>有什麼不滿，<br>你已經把它當成<br>生活的正常部分？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','把這個問題送給朋友','g-link')}</footer><details><summary>隱私與這台裝置的使用統計</summary><p>快照與工作台分開儲存。分享卡不讀取私人回答；個人卡要由你另外輸入。清除瀏覽器資料會刪除紀錄，內建瀏覽器與一般瀏覽器的資料可能不同。完整工作台支援 JSON 備份。</p><p>下方僅是本機操作次數，依進站來源分類；不含反思內容，不含個人回答；預設僅存在本機，也無法證明社群貼文已發布。</p>${window.resetAnalyticsPanel()}${button('metrics-export','下載本機統計')}${button('metrics-clear','清除本機統計')}<p>想法需要更多時間？可使用依 Dan Koe 流程整理的完整工作台。這是自我反思工具，不提供心理評分。</p></details>`;
   }
   function quick() {
     const q = questions[step];
@@ -62,12 +44,7 @@
   }
   const cardText = () => mode === 'personal' ? personal : '有什麼不滿，你已經把它當成生活的正常部分？';
   function shareURL() {
-    const url = new URL(location.href);
-    url.search = ''; url.hash = 'snapshot';
-    url.searchParams.set('utm_source', platform);
-    url.searchParams.set('utm_medium', 'social');
-    url.searchParams.set('utm_campaign', 'snapshot');
-    return url.href;
+    return analytics.buildLink({source:platform,campaign:'snapshot',content:mode==='personal'?'personal_card':'question_card'});
   }
   const caption = () => `${mode==='personal'?'這週，給自己的小承諾：':'留一個問題給最近有點迷路的自己：'}\n${cardText()}\n\n用三個問題，寫下現況與下一步。One Day Reset，90 秒人生快照。\n${shareURL()}`;
   function share() {
@@ -106,7 +83,7 @@
     c.font='700 42px sans-serif';c.fillText('One Day Reset',86,h-180);
     c.font='28px "Microsoft JhengHei",sans-serif';c.fillText('90 秒人生快照 · 免費體驗',86,h-120);
     canvas.setAttribute('aria-label',`分享卡預覽：${text}。One Day Reset，90 秒人生快照。`);
-    canvas.toBlob(blob=>{if(blob && version===imageVersion)imageFile=new File([blob],'one-day-reset.png',{type:'image/png'});},'image/png');
+    canvas.toBlob(blob=>{if(blob && version===imageVersion){imageFile=new File([blob],'one-day-reset.png',{type:'image/png'});if(mode==='question'||personal.trim())analytics.track('card_generated',{card_type:mode,format,channel:platform,entry:'share'});}},'image/png');
   }
   const validCard = () => {if(mode==='personal'&&!personal.trim()){status('先寫下願意分享的一句話，或改用通用問題卡。');document.getElementById('g-personal').focus();return false;}return true;};
   function download(name, blob) {
@@ -126,14 +103,14 @@
     try {await navigator.share(payload);track('native_share_resolved');status('已交給系統分享流程。是否發布，請在你選擇的 App 中確認。');}
     catch(error){track(error.name==='AbortError'?'native_share_cancel':'native_share_error');status(error.name==='AbortError'?'已取消分享，卡片仍在這裡。':'分享未完成，請改用下載圖片或複製文字與網址。');}
   }
-  function workbench() {track('workbench_enter');root.hidden=true;app.hidden=false;document.dispatchEvent(new Event('reset:workbench'));window.scrollTo(0,0);}
+  function workbench() {track('workbench_enter');if(screen==='quick'||screen==='result'||(screen==='share'&&returnScreen==='result'))analytics.track('snapshot_workbench_entered',{entry:screen});root.hidden=true;app.hidden=false;document.dispatchEvent(new Event('reset:workbench'));window.scrollTo(0,0);}
   root.addEventListener('click',event=>{
     const target=event.target.closest('[data-g]');if(!target)return;event.preventDefault();
     switch(target.dataset.g){
       case 'home':show('home');break;
-      case 'start':if(!started){track('snapshot_start');started=true;}show('quick');break;
+      case 'start':track('snapshot_start');show('quick');break;
       case 'back':step=Math.max(0,step-1);show('quick');break;
-      case 'next':if(!answers[step].trim()){status('寫下一句就好，讓這份快照對你有意義。');document.getElementById('g-answer').focus();break;}if(step<2){step++;show('quick');}else{if(!completed){track('snapshot_complete');completed=true;}show('result');}break;
+      case 'next':if(!answers[step].trim()){status('寫下一句就好，讓這份快照對你有意義。');document.getElementById('g-answer').focus();break;}if(step<2){step++;show('quick');}else{track('snapshot_complete');show('result');}break;
       case 'edit':step=0;show('quick');break;
       case 'share':returnScreen=screen==='result'?'result':'home';track('share_intent');mode='question';personal='';show('share');break;
       case 'return':personal='';imageFile=null;show(returnScreen);break;
@@ -143,9 +120,9 @@
       case 'copy-text':if(validCard()){track('share_intent');copy(caption(),'text_copy');}break;
       case 'copy-link':track('share_intent');copy(shareURL(),'link_copy');break;
       case 'draft-export':download('私人人生快照.json',new Blob([JSON.stringify({format:DRAFT,answers},null,2)],{type:'application/json'}));break;
-      case 'draft-clear':if(confirm('清除三題私人快照？完整工作台不受影響。')){answers=['','',''];step=0;completed=false;try{localStorage.removeItem(DRAFT);}catch{}show('home');}break;
-      case 'metrics-export':download('本機操作統計.json',new Blob([JSON.stringify(read(METRICS)||{},null,2)],{type:'application/json'}));break;
-      case 'metrics-clear':try{localStorage.removeItem(METRICS);}catch{}render();break;
+      case 'draft-clear':if(confirm('清除三題私人快照？完整工作台不受影響。')){answers=['','',''];step=0;try{localStorage.removeItem(DRAFT);}catch{}show('home');}break;
+      case 'metrics-export':download('本機操作統計.json',new Blob([JSON.stringify(analytics.report(),null,2)],{type:'application/json'}));break;
+      case 'metrics-clear':analytics.clear();render();break;
     }
   });
   root.addEventListener('input',event=>{
@@ -158,10 +135,9 @@
     if(event.target.id==='g-format'){format=event.target.value;render();}
   });
   const entry=document.createElement('button');entry.className='g-workbench-home';entry.textContent='90 秒快照與分享卡';entry.addEventListener('click',()=>show('home'));document.querySelector('.main-inner').prepend(entry);
-  track('visit');
   const old=read('one-day-reset-tw-v1');
   const hasWork=old && (['morning','evening','dayNotes','bonus'].some(key=>Object.values(old[key]||{}).some(value=>typeof value==='string'&&value.trim())) || old.constraints || (Array.isArray(old.quests)&&old.quests.some(q=>q?.text)) || Object.values(old.dayDone||{}).some(Boolean));
   if(!hasWork || location.hash==='#snapshot')show('home');
   // Shared links start at the first question without exposing anything in URLs.
-  if(location.hash==='#snapshot'){step=0;started=true;track('snapshot_start');show('quick');}
+  if(location.hash==='#snapshot'){step=0;track('snapshot_start');show('quick');}
 })();
