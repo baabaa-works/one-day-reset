@@ -4,8 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light" />
-  <title>ONE DAY RESET｜一天人生重整工作台</title>
-  <meta name="description" content="依照 Dan Koe 的一天人生重整方法，逐步完成反願景、願景、白天自我檢查與行動任務。繁體中文、無需登入、在本機自動儲存。" />
+  <title>One Day Reset｜90 秒，找回下一步</title>
+  <meta name="description" content="最近很努力，卻不知道在往哪裡走？用三個問題，寫下現況、想靠近的生活與這週的小行動。免費、免登入，回答留在你的裝置。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:title" content="最近很努力，卻不知道在往哪裡走？" />
+  <meta property="og:description" content="90 秒人生快照。三個問題，給自己一個重新開始的地方。免費、免登入。" />
+  <meta property="og:image" content="https://baabaa-works.github.io/one-day-reset/assets/social-preview.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="One Day Reset：最近很努力，卻不知道在往哪裡走？90 秒人生快照。" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="assets/growth.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
   <style>
     :root {
       --ink:#202b25; --ink2:#3c4c42; --muted:#7b8980; --cream:#f5f4ee; --paper:#fffefa;
@@ -47,7 +58,7 @@
     .main{padding:29px clamp(20px,4.7vw,78px) 90px;min-width:0}
     .main-inner{max-width:1120px;margin:auto}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:43px}
-    .top-left{display:flex;align-items:center;gap:10px;color:#6f8275;font-weight:750;font-size:12px;letter-spacing:.12em}
+    .top-left{display:flex;align-items:center;gap:10px;color:#526354;font-weight:750;font-size:14px;letter-spacing:.12em}
     .top-orbit{width:10px;height:10px;background:#8ab9a2;box-shadow:0 0 0 5px #e7efdf;border-radius:50%}
     .save-pill{border:1px solid #dfe5d9;padding:8px 12px;border-radius:100px;background:#fffefa;color:#687e6f;font-size:12px;font-weight:650;display:flex;align-items:center;gap:8px}
     .save-pill:before{content:"";width:6px;height:6px;background:#65aa7c;border-radius:50%}
@@ -194,6 +205,7 @@
   </style>
 </head>
 <body>
+<section id="growth" aria-label="人生快照" hidden></section>
 <div class="app" id="app">
   <aside class="sidebar" aria-label="主要導覽">
     <div>
@@ -363,8 +375,10 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'&&['morning','evening'].includes(state.view)){e.preventDefault();step(1)}});
 el('importFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const raw=JSON.parse(await f.text());if(raw.format!=='one-day-reset-tw-v1'&&!('morning'in raw&&'evening'in raw))throw Error('檔案不是本工具的備份格式。');if(!confirm('匯入備份將覆蓋目前這個工作台的內容。確定繼續嗎？'))return;state=normalize(raw);save();render();window.scrollTo(0,0);alert('已成功匯入備份。')}catch(err){alert('匯入失敗：'+err.message)}finally{e.target.value=''}});
+document.addEventListener('reset:workbench',()=>{render();document.getElementById('main').focus({preventScroll:true});});
 render();
 })();
 </script>
+<script src="assets/growth.js"></script>
 </body>
 </html>
