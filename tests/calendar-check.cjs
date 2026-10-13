@@ -17,7 +17,7 @@ assert.throws(()=>api.calendar([{date:'2026-10-13',time:'24:00',title:'問題'}]
 assert.equal(new URL(api.google({date:'2026-10-13',time:'10:17',title:'公開提問'})).searchParams.get('ctz'),'Asia/Taipei');
 if(fs.existsSync('test-results/snapshot-action.ics')) {
   const result=fs.readFileSync('test-results/snapshot-action.ics','utf8').replace(/\r\n /g,'');
-  assert(result.includes('SUMMARY:這週我先：晚飯後散步'));
+  assert(result.includes('SUMMARY:這週三晚飯後散步')&&!result.includes('這週我先'));
   assert(result.includes('DTSTART;TZID=Asia/Taipei:20261015T183700'));
 }
 console.log('PASS: calendar date/time validation, midnight rollover, UTF-8 folding, escaping, timezone and snapshot action content.');

@@ -5,10 +5,12 @@ async page => {
   await page.goto(base);await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();localStorage.setItem('one-day-reset-tw-v1',JSON.stringify({view:'morning',morning:{m1:'KEEP_PRIVATE'},evening:{e18:'PRIVATE 避開',e19:'PRIVATE 靠近',e20:'PRIVATE 年',e21:'PRIVATE 月'},constraints:'PRIVATE 底線',quests:[{text:'PRIVATE 行動一',time:'09:00'},{text:'PRIVATE 行動二',time:'10:00'}]}));});await page.reload();
   await page.locator('[data-g="start"]').click();
   for(const answer of ['不能覆蓋舊回答','我的三年場景','本週小事']){await page.locator('#g-answer').fill(answer);await page.locator('[data-g="next"]').click();}
-  await page.locator('[data-g="bring"]').click();check(await page.locator('#w-import').isVisible(),'Snapshot bring shows preview and confirmation');
-  check(await page.evaluate(()=>ResetWorkbench.read().morning.m13===undefined),'No mutation before confirmation');await page.locator('#w-import [data-cancel]').click();
-  await page.locator('.g-workbench-home').click();await page.locator('[data-g="start"]').click();await page.locator('[data-g="next"]').click();await page.locator('[data-g="bring"]').click();await page.locator('#w-import [data-confirm]').click();
-  check(await page.evaluate(()=>{const s=ResetWorkbench.read();return s.morning.m1==='KEEP_PRIVATE'&&s.morning.m13==='我的三年場景'&&s.morning.m15==='本週小事';}),'Confirmed bring only fills empty fields');
+  await page.locator('[data-g="bring"]').click();check((await page.locator('.w-brought').textContent()).includes('2 題'),'Snapshot answers carry over with a visible note');
+  check(await page.evaluate(()=>{const s=ResetWorkbench.read();return s.morning.m1==='KEEP_PRIVATE'&&s.morning.m13==='我的三年場景'&&s.morning.m15==='本週小事';}),'Carry-over only fills empty fields');
+  await page.locator('[data-question-number="11"]').click();check(await page.locator('#focusedAnswer').inputValue()==='我的三年場景'&&(await page.locator('[data-question-number="11"]').textContent())==='12','Carried answer sits in question 12 of a gapless 1–14 index');
+  await page.locator('#focusedAnswer').fill('');await page.locator('.g-workbench-home').click();await page.locator('#growth [data-g="workbench"]').first().click();
+  check(await page.evaluate(()=>ResetWorkbench.read().morning.m13==='')&&await page.locator('.w-brought').count()===0,'Both entrances behave the same and a cleared answer is not refilled');
+  await page.locator('[data-question-number="0"]').click();
   await page.setViewportSize({width:360,height:800});
   check(await page.locator('.question-card').count()===1,'Mobile morning shows one question');check(await page.locator('.w-stop-note').isVisible(),'Heavy section permits stopping or skipping');
   check(await page.locator('#focusedAnswer').evaluate(e=>getComputedStyle(e).fontSize==='16px'),'Workbench input prevents iOS zoom');

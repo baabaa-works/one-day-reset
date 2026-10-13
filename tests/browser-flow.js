@@ -13,7 +13,7 @@ async page => {
   await page.screenshot({path:'test-results/mobile-home.png',fullPage:true});
   await click('start');
   await click('next');
-  check((await page.locator('.g-flow').textContent()).includes('2 / 3'), 'Blank answer can advance without pressure');
+  check((await page.locator('.g-steps [aria-current]').textContent()).includes('2'), 'Blank answer can advance without pressure');
   await click('back');
   const privateAnswers=['PRIVATE_SENTINEL 不想再無目的加班','每天保留自己的時間','週三晚上散步十分鐘'];
   for (let i=0;i<3;i++){await page.locator('#g-answer').fill(privateAnswers[i]);await click('next');}
@@ -33,6 +33,7 @@ async page => {
   check((await page.locator('#g-status').textContent()).includes('先看過'),'Personal card requires intentional preview confirmation');
   const personal='這週，留一個晚上給自己。';
   await page.locator('#g-personal').fill(personal);
+  await page.locator('#g-more summary').click();
   await page.locator('#g-format').selectOption('story');
   check(await page.locator('#g-card').evaluate(c=>c.width===1080&&c.height===1920),'Story card is 1080×1920');
   await page.locator('#g-personal').fill('字'.repeat(100));
@@ -83,7 +84,7 @@ async page => {
   check(await page.locator('#app').isVisible(),'Returning user resumes workbench');
   check(await page.locator('#focusedAnswer').inputValue()==='EXISTING_WORK','Legacy answer restored');
   await page.locator('.g-workbench-home').click();await click('start');
-  await click('back');await click('back');
+  await click('edit');
   check(await page.locator('#g-answer').inputValue()===privateAnswers[0],'Snapshot draft persists separately');
   await click('workbench');
   check(await page.locator('#focusedAnswer').inputValue()==='EXISTING_WORK','Quick flow never overwrites workspace');
@@ -118,8 +119,8 @@ async page => {
   }
   await page.setViewportSize({width:1440,height:1000});await page.locator('.g-workbench-home').click();await page.screenshot({path:'test-results/desktop-home.png',fullPage:true});
   await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw new DOMException('denied','SecurityError');};Storage.prototype.getItem=()=>{throw new DOMException('denied','SecurityError');};});
-  await click('start');await page.locator('#g-answer').fill('儲存被禁止');
-  check((await page.locator('#g-status').textContent()).includes('無法儲存'),'Storage failure shows actionable warning');
+  await click('start');await click('edit');await page.locator('#g-answer').fill('儲存被禁止');
+  check((await page.locator('#g-status').textContent()).includes('存不了'),'Storage failure shows actionable warning');
   check(errors.length===0,'No browser JavaScript errors');
   await page.evaluate(report=>{window.testReport=report;},{passed:checks.length,checks});
   console.log(JSON.stringify({passed:checks.length,checks}));

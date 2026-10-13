@@ -3,18 +3,21 @@ async page => {
   const click=action=>page.locator(`#growth [data-g="${action}"]`).first().click();
   await page.goto('http://127.0.0.1:4173/');await page.evaluate(()=>{localStorage.clear();sessionStorage.clear();});await page.reload();await click('start');
   for(const value of ['SHARE_PRIVATE_現況','SHARE_PRIVATE_方向','SHARE_PRIVATE_行動']){await page.locator('#g-answer').fill(value);await click('next');}
+  check(await page.locator('#growth [data-g="line"]').count()===0&&await page.locator('#growth .g-primary').count()===1,'Result page keeps one primary action and no promotion buttons');
+  await click('share');check(!(await page.locator('#growth').textContent()).includes('SHARE_PRIVATE'),'Default share page excludes answers');
+  check((await page.locator('#g-card').getAttribute('aria-label')).includes('哪件小事'),'Default preview is general question');
+  check(await page.evaluate(()=>!document.querySelector('#g-more').open&&[...document.querySelectorAll('#growth .g-share button,#growth .g-share a')].filter(e=>!e.closest('details')&&!e.closest('[hidden]')).length===3),'Share page shows save and copy first, the rest behind one disclosure');
+  await page.locator('#g-more summary').click();
   const line=await page.locator('[data-g="line"]').getAttribute('href');
   const parsed=await page.evaluate(href=>{const line=new URL(href),url=new URL(line.searchParams.get('url'));return {origin:line.origin,path:line.pathname,url:url.href,params:Object.fromEntries(url.searchParams)};},line);
-  check(parsed.origin==='https://social-plugins.line.me'&&parsed.path==='/lineit/share','Result exposes direct official LINE share in one action');
+  check(parsed.origin==='https://social-plugins.line.me'&&parsed.path==='/lineit/share','Share page exposes direct official LINE share');
   check(parsed.params.utm_source==='share'&&parsed.params.utm_medium==='friend'&&parsed.params.utm_campaign==='snapshot','Friend attribution is exact');
   check(!line.includes('PRIVATE')&&!decodeURIComponent(line).includes('PRIVATE'),'LINE invitation has no answer');
-  await page.locator('details summary').click();await page.locator('#g-tone').selectOption('1');await page.locator('#g-invite').fill('EDITED_INVITE 一起寫幾句');
+  await page.locator('#g-tone').selectOption('1');await page.locator('#g-invite').fill('EDITED_INVITE 一起寫幾句');
   check(decodeURIComponent(await page.locator('[data-g="line"]').getAttribute('href')).includes('EDITED_INVITE'),'LINE follows edited invitation');
   await page.evaluate(()=>{window.copied='';Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>window.copied=text}});});
   await click('copy-invite');check(await page.evaluate(()=>window.copied.includes('EDITED_INVITE')&&window.copied.includes('#snapshot')&&!window.copied.includes('PRIVATE')),'One copy includes invitation and safe link');
   await click('threads');check(await page.evaluate(()=>window.copied.includes('EDITED_INVITE')),'Threads offers verified copy fallback');
-  await click('share');check(!(await page.locator('#growth').textContent()).includes('SHARE_PRIVATE'),'Default share page excludes answers');
-  check((await page.locator('#g-card').getAttribute('aria-label')).includes('哪件小事'),'Default preview is general question');
   await page.waitForTimeout(400); // 等通用卡的 toBlob 回呼落地，避免基準值取樣過早
   const count=await page.evaluate(()=>Object.values(ResetAnalytics.report().groups).reduce((n,r)=>n+(r.actions.card_generated||0),0));
   await page.locator('input[value="personal"]').check();

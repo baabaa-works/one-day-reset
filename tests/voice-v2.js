@@ -41,6 +41,8 @@ async page => {
   await page.evaluate(()=>{window.__sr.onerror({error:'not-allowed'});window.__sr.onend();});
   check((await status.textContent()).includes('麥克風沒有開啟權限')&&await btn.getAttribute('aria-pressed')==='false','Denied microphone shows a recovery hint');
 
+  // 快照有內容時會自動帶入完整版第 1 題；這裡要測空白題目的語音輸入。
+  await page.evaluate(()=>localStorage.removeItem('one-day-reset-snapshot-v1'));
   await page.reload();await click('workbench');await page.locator('#app [data-view="morning"]').first().click();
   const wb=page.locator('#focusedAnswer + .voice-row .voice-btn');
   check(await wb.count()===1,'Workbench answer has a microphone button after re-render');

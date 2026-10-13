@@ -7,12 +7,14 @@ async page => {
     await page.locator('[data-g="start"]').click();
     for(let i=0;i<3;i++) {
       check(await page.locator('#g-answer').evaluate(e=>getComputedStyle(e).fontSize==='16px'),`${size.width} ${entry} question ${i+1}: input 16px`);
+      check(await page.evaluate(()=>{const a=document.querySelector('#g-answer').getBoundingClientRect(),n=document.querySelector('[data-g="next"]').getBoundingClientRect();return scrollY===0&&a.top>=0&&a.bottom<=innerHeight&&n.top>=a.bottom&&n.bottom<=innerHeight;}),`${size.width} ${entry} question ${i+1}: input and next inside the first screen`);
       await page.locator('#g-answer').fill(['下班後還在回工作訊息','在安靜的房間醒來，慢慢吃早餐','週三晚餐後散步十分鐘'][i]);
-      if(i===2)await page.locator('#g-identity').fill('替自己留時間');
       await page.screenshot({path:prefix+`-q${i+1}.png`});await page.locator('[data-g="next"]').click();
     }
-    check(await page.locator('.g-identity-line').isVisible(),`${size.width} ${entry}: identity is main result`);
-    check(await page.locator('.g-action-line').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)<parseFloat(getComputedStyle(e.previousElementSibling).fontSize)),`${size.width} ${entry}: action smaller than identity`);
+    await page.locator('#g-identity').fill('替自己留時間');
+    check(await page.locator('#g-sign').isVisible()&&await page.locator('#g-sign').textContent()==='我是會替自己留時間的人',`${size.width} ${entry}: identity signs the card as it is typed`);
+    check(await page.evaluate(()=>parseFloat(getComputedStyle(document.querySelector('.g-node-step .g-words')).fontSize)>parseFloat(getComputedStyle(document.querySelector('.g-node .g-words')).fontSize)),`${size.width} ${entry}: this week's step is the largest line on the card`);
+    check(await page.locator('#growth .g-primary').count()===1,`${size.width} ${entry}: result has one primary action`);
     await page.screenshot({path:prefix+'-result.png'});await page.locator('[data-g="share"]').click();await page.locator('#g-card').screenshot({path:prefix+'-card.png'});await page.screenshot({path:prefix+'-share.png'});
     await page.locator('input[value="personal"]').check();await page.locator('[data-g="confirm-personal"]').click();await page.locator('#g-card').screenshot({path:prefix+'-identity-card.png'});
     await page.locator('#growth [data-g="workbench"]').first().click();await page.locator('#nav [data-view="morning"]').click();await page.screenshot({path:prefix+'-workbench-morning.png'});await page.locator('#nav [data-view="day"]').click();await page.screenshot({path:prefix+'-workbench-day.png'});check(await page.locator('.time-card:visible h3').evaluate(e=>e.getBoundingClientRect().top<innerHeight),`${size.width} ${entry}: daytime question visible without scrolling`);await page.locator('#nav [data-view="plan"]').click();await page.screenshot({path:prefix+'-workbench-plan.png'});

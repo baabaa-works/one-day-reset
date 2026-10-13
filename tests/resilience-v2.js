@@ -18,10 +18,10 @@ async page => {
       check(await test.locator('.g-storage-warning').isVisible(),`${name}: upfront memory warning`);
       await click('start');for(const value of ['MEMORY_PRIVATE 忙碌','有自己的時間','週三散步']){await test.locator('#g-answer').fill(value);await click('next');}
       check((await test.locator('.g-summary').textContent()).includes('MEMORY_PRIVATE'),`${name}: completes with all capabilities blocked`);
-      await click('copy-answers');check((await test.locator('#reset-copy').inputValue()).includes('MEMORY_PRIVATE'),`${name}: selected manual private answer fallback`);
+      await test.locator('.g-more summary').click();await click('copy-answers');check((await test.locator('#reset-copy').inputValue()).includes('MEMORY_PRIVATE'),`${name}: selected manual private answer fallback`);
       check(await test.locator('#reset-copy').evaluate(e=>e.selectionEnd===e.value.length),`${name}: fallback text selected`);await test.locator('#reset-fallback button').click();
       await click('draft-export');check((await test.locator('#reset-copy').inputValue()).includes('one-day-reset-snapshot-v1'),`${name}: backup denial offers manual JSON`);await test.locator('#reset-fallback button').click();
-      await click('share');await test.waitForTimeout(120);await click('native');check(await test.locator('#reset-fallback img').isVisible(),`${name}: native unavailable gives long-press img`);await test.locator('#reset-fallback button').click();
+      await click('share');await test.waitForTimeout(120);await test.locator('#g-more summary').click();await click('native');check(await test.locator('#reset-fallback img').isVisible(),`${name}: native unavailable gives long-press img`);await test.locator('#reset-fallback button').click();
       await click('download');check(await test.locator('#reset-fallback img').isVisible(),`${name}: blocked download gives long-press img`);await test.locator('#reset-fallback button').click();
       await click('copy-invite');check((await test.locator('#g-copy').inputValue()).includes('utm_medium=friend')&&!(await test.locator('#g-copy').inputValue()).includes('MEMORY_PRIVATE'),`${name}: public manual invitation excludes answer`);
       await test.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('denied','NotAllowedError');}}));await click('native');check(await test.locator('#reset-fallback img').isVisible(),`${name}: native rejection gives img`);await test.locator('#reset-fallback button').click();

@@ -44,11 +44,11 @@
   function mount() {
     const s=work.read(),content=document.getElementById('content');
     if(['morning','day','evening'].includes(s.view)){options.lastView=s.view;saveOptions();}
-    if(s.view==='overview') {
+    if(s.view==='overview'&&options.lastView) {
       const resume=document.createElement('div');resume.className='report-tools';resume.innerHTML=btn('resume','從上次的地方繼續');content.prepend(resume);
     }
     if(['morning','evening'].includes(s.view)) {
-      const note=document.createElement('p');note.className='w-stop-note';note.textContent='可以隨時停下來或跳過。這份筆記只需要照顧你的步調。';content.querySelector('.question-card')?.prepend(note);
+      if((s.view==='morning'?s.mi:s.ei)===0){const note=document.createElement('p');note.className='w-stop-note';note.textContent='寫不下去的題目可以跳過，隨時可以停。';content.querySelector('.question-card')?.prepend(note);}
       content.querySelector('.question-footer')?.insertAdjacentHTML('beforeend',btn('pause','今天先停在這裡'));
     }
     if(s.view==='day') {
@@ -85,11 +85,13 @@
   document.addEventListener('reset:phase-end',e=>pause(e.detail.next));
   document.addEventListener('reset:review',review);
   document.addEventListener('reset:workbench-cleared',()=>{options={prompts:{},skipped:{}};try{localStorage.removeItem(KEY);localStorage.removeItem(CARD);}catch{document.dispatchEvent(new Event('reset:storage-unavailable'));}});
+  // 快照答案只填早晨的空白題目；帶過一次的題目之後清空也不會再被填回去。
   document.addEventListener('reset:snapshot-import',e=>{
-    const data=e.detail,current=work.read(),mapping=[['m1','現況',data.answers[0]],['m13','願景',data.answers[1]],['m15','本週行動',data.answers[2]],['m14','身份句',data.identity]];
-    const dialog=document.createElement('dialog');dialog.id='w-import';dialog.setAttribute('aria-label','快照帶入預覽');
-    dialog.innerHTML=`<h2>確認後，只填工作台的空欄</h2><p>已有文字的欄位會保留，不會覆蓋。</p>${mapping.map(([key,label,value])=>`<h3>${escape(label)}</h3><p>${current.morning[key]?.trim()?'已有內容，保留原文':value?escape(value):'快照留白，不帶入'}</p>`).join('')}<button type="button" class="btn btn-dark" data-confirm>確認帶入空欄</button><button type="button" class="btn btn-outline" data-cancel>取消</button>`;
-    document.body.append(dialog);dialog.showModal();dialog.querySelector('[data-cancel]').onclick=()=>dialog.close();dialog.querySelector('[data-confirm]').onclick=()=>{const added=work.bring(data);feedback(added.length?`已帶入 ${added.length} 個空欄；原有回答保留。`:'沒有需要帶入的空欄，原有回答保留。');dialog.close();};dialog.addEventListener('close',()=>dialog.remove());
+    const brought=Array.isArray(options.brought)?options.brought:[],keys=['m1','m13','m15'];
+    const added=work.bring({answers:e.detail.answers.map((answer,i)=>brought.includes(keys[i])?'':answer),identity:brought.includes('m14')?'':e.detail.identity});
+    if(!added.length)return;
+    options.brought=[...new Set([...brought,...added])];saveOptions();
+    const note=document.createElement('p');note.className='w-brought';note.setAttribute('role','status');note.textContent=`已把快照寫的 ${added.length} 題帶進早晨的題目，原本有內容的題目沒有動。`;document.getElementById('content').prepend(note);
   });
   document.addEventListener('click',e=>{
     if(e.target.closest('#app [data-action="calendar"]')){e.preventDefault();e.stopImmediatePropagation();exportCalendar(calendarEvents(),'六個提問提醒.ics');return;}

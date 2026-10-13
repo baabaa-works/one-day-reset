@@ -82,3 +82,26 @@ A `8597fe9`、B `761c6e7`、C `82ae720`、D `894e56d`、E `ee0f62d`、F `b6916df
 - `voice-v2`：17 項通過（假的 SpeechRecognition）；完整套件 12 組共 335 項瀏覽器斷言與 Node 檢查全數通過。
 - `share-v2` 補上 400ms 等待：原本在通用卡 `toBlob` 回呼落地前取樣基準值，偶發誤判，與產品行為無關。
 - 未驗證：真實麥克風的辨識品質、iOS Safari、Threads／IG／LINE 內建瀏覽器。
+
+## 2026-10-13 初次使用者報告後的改版（分支 `redesign-bold`）
+
+本報告前面各節描述的是改版前的流程（身份句在第 3 題、結果頁直接開 LINE、帶入要先確認）。改版後的行為、逐項對照與量測見 [初次使用者報告](first-time-user-report.md) 的「修正後複查」。
+
+| 驗證 | 通過檢查 |
+| --- | ---: |
+| browser-flow | 67 |
+| mobile-check | 8 |
+| analytics-browser | 21 |
+| entry-v2 | 57 |
+| snapshot-v2（重寫） | 40 |
+| share-v2 | 23 |
+| resilience-v2 | 52 |
+| workbench-v2 | 27 |
+| diagnostics-v2 | 8 |
+| final-mobile | 51 |
+| storage-quota-v2 | 4 |
+| voice-v2 | 17 |
+| 合計 | 375 |
+
+- 另以 agent-browser 在 390×812 走完整條路並存截圖（`test-results/redesign/`），以及 390×664 加上封鎖儲存／分享／剪貼簿／下載的內建瀏覽器模擬。
+- 未驗證：真實鍵盤、iOS Safari、真正的 Threads／IG／LINE 內建瀏覽器、實際存入相簿與行事曆 App、真實使用者。

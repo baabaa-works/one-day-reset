@@ -44,8 +44,8 @@ There is no module system. `index.html` loads classic scripts that communicate t
 | Key | Owner | Notes |
 | --- | --- | --- |
 | `one-day-reset-tw-v1` | index.html | Workbench state. **Format and key are frozen**; imports also accept the legacy raw `{morning, evening}` shape. |
-| `one-day-reset-snapshot-v1` | growth.js | Snapshot draft. |
-| `one-day-reset-workbench-options-v1` | workbench.js | Reminder prompts/times, skips, position. Not part of the JSON backup. |
+| `one-day-reset-snapshot-v1` | growth.js | Snapshot draft (`answers`, `tags`, `identity`, `scheduledAt`, `step`, optional `done`). |
+| `one-day-reset-workbench-options-v1` | workbench.js | Reminder prompts/times, skips, position, `brought` (snapshot answers already carried into the workbench). Not part of the JSON backup. |
 | `one-day-reset-game-card-v1` | workbench.js | Explicitly saved six-grid card. Not part of the JSON backup. |
 | `one-day-reset-analytics-v1` / `-session-v1` / `-consent-v1` | analytics.js | Counters only; 30-minute same-tab session window. |
 
