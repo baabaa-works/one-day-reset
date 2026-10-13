@@ -53,7 +53,7 @@ There is no module system. `index.html` loads classic scripts that communicate t
 
 - Events, property names and property values are allowlists in `analytics.js`; unknown values are dropped, never stored. Never add free text, answers, UA strings or IDs to an event.
 - `utm_campaign` / `utm_content` / `s=` short links are only recognized if registered in `analytics-config.js` (`campaigns`, `contents`, `shortLinks`); otherwise they bucket as `unregistered`. Adding a new post code means editing that file and `docs/growth-analytics.md`.
-- `RESET_ANALYTICS_CONFIG.enabled` is `false` and `websiteId` empty. External (Umami) transmission needs explicit owner consent plus visitor opt-in — do not flip it.
+- `RESET_ANALYTICS_CONFIG.enabled` is `true` with the owner's public Umami `websiteId` (owner consented 2026-10-13). The owner chose opt-out: allowlisted anonymous events send by default on the published hostname only, visitors can stop them in 「隱私與資料」, and DNT/GPC always block. Do not widen what is sent, remove the stop control or change the ID without the owner asking.
 - Share cards: the default card is generic; personal text only enters a card after an explicit choice + confirmation, lives in memory, and never goes into URLs or analytics. Calendar/ICS and Google Calendar links carry reminder prompts only, never workbench answers.
 
 ## Docs worth knowing

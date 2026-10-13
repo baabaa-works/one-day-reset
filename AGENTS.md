@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a Git repository with a native HTML workbench in `index.html`, social entry UI in `assets/growth.js` and `assets/growth.css`, opt-in analytics in `assets/analytics*.js`, flow checks in `tests/`, and a dependency-free preview server in `scripts/preview.cjs`. Preserve the existing `one-day-reset-tw-v1` storage and backup format. Never transmit reflection text or enable external analytics without explicit owner consent.
+This is a Git repository with a native HTML workbench in `index.html`, social entry UI in `assets/growth.js` and `assets/growth.css`, opt-out anonymous analytics in `assets/analytics*.js`, flow checks in `tests/`, and a dependency-free preview server in `scripts/preview.cjs`. Preserve the existing `one-day-reset-tw-v1` storage and backup format. Never transmit reflection text. The owner enabled external (Umami) analytics on 2026-10-13; do not widen what is sent or remove the visitor stop control without explicit owner consent.
 
 When adding the initial implementation, keep application code, tests, and static assets clearly separated. Suggested directories are `src/`, `tests/`, and `assets/`; these are proposed conventions, not existing paths. Document installation and local setup in `README.md`.
 

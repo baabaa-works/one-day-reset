@@ -3,11 +3,13 @@ const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const configCode=fs.readFileSync('assets/analytics-config.js','utf8');
 const code=fs.readFileSync('assets/analytics.js','utf8');
-function environment(search=''){
+// Suites run against a disabled service unless they opt in, so the shipped
+// website ID is never the one under test.
+function environment(search='',override={enabled:false,websiteId:''}){
   const local=new Map(),session=new Map(),requests=[];let now=0;
   const storage=map=>({getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)});
   const c={window:{},location:{search,href:'https://baabaa-works.github.io/one-day-reset/'+search,hostname:'baabaa-works.github.io'},document:{referrer:''},navigator:{},URL,URLSearchParams,localStorage:storage(local),sessionStorage:storage(session),Date:{now:()=>now},fetch:(url,opts)=>{requests.push({url,opts});return Promise.resolve({});}};
-  vm.createContext(c);vm.runInContext(configCode,c);vm.runInContext(code,c);
+  vm.createContext(c);vm.runInContext(configCode,c);c.window.RESET_ANALYTICS_CONFIG={...c.window.RESET_ANALYTICS_CONFIG,...override};vm.runInContext(code,c);
   return {c,local,session,requests,a:c.window.ResetAnalytics,advance:ms=>{now+=ms;},reload:()=>vm.runInContext(code,c)};
 }
 const e=environment('?utm_source=threads&utm_medium=social&utm_campaign=launch_202610&utm_content=threads_question_01');
@@ -18,24 +20,28 @@ let report=e.a.report().groups[group];
 assert.equal(report.sessions.visit_started,1);assert.equal(report.sessions.snapshot_started,1);assert.equal(report.sessions.snapshot_completed,1);assert.equal(report.actions.share_intent,2);assert.equal(report.sessions.share_intent,1);assert.equal(report.sessions.snapshot_workbench_entered,1);
 e.reload();assert.equal(e.a.report().groups[group].sessions.visit_started,1);
 e.advance(31*60*1000);e.a.track('snapshot_completed');report=e.a.report().groups[group];assert.equal(report.sessions.visit_started,2);assert.equal(report.sessions.snapshot_started,2);assert.equal(report.sessions.snapshot_completed,2);
-assert.equal(e.requests.length,0,'Default never uploads');
+assert.equal(e.requests.length,0,'Disabled service never uploads');
 const unsafe=environment('?utm_source=PRIVATE_EMAIL&utm_campaign=PRIVATE_ANSWER&utm_content=PRIVATE_GOAL');
 assert.equal(JSON.stringify(unsafe.a.report()).includes('PRIVATE'),false);
 assert.equal(unsafe.a.attribution().source,'other');assert.equal(unsafe.a.attribution().campaign,'unregistered');
 const direct=environment();direct.a.track('snapshot_workbench_entered');assert.equal(direct.a.report().groups['direct|none|unregistered|unregistered'].sessions.snapshot_workbench_entered,undefined);
 const enabled={...e.c.window.RESET_ANALYTICS_CONFIG,enabled:true,websiteId:'00000000-0000-0000-0000-000000000001'};
 e.c.window.RESET_ANALYTICS_CONFIG=enabled;e.reload();e.a=e.c.window.ResetAnalytics;
-e.a.track('share_intent');assert.equal(e.requests.length,0,'Owner configuration alone cannot send');
-e.a.consent(true);e.a.track('share_intent',{card_type:'personal',format:'story',channel:'instagram',answer:'PRIVATE_ANSWER',text:'PRIVATE_TEXT',url:'PRIVATE_URL',email:'PRIVATE_EMAIL'});
-assert.equal(e.requests.length,2); // opted-in visit denominator plus current intent
+assert.equal(e.requests.length,1,'Enabled service sends the anonymous visit without a consent click');assert.equal(JSON.parse(e.requests[0].opts.body).payload.name,'visit_started');
+e.a.track('share_intent',{card_type:'personal',format:'story',channel:'instagram',answer:'PRIVATE_ANSWER',text:'PRIVATE_TEXT',url:'PRIVATE_URL',email:'PRIVATE_EMAIL'});
+assert.equal(e.requests.length,2); // visit denominator plus current intent
 const wire=JSON.parse(e.requests[1].opts.body);
 assert.equal(JSON.stringify(wire).includes('PRIVATE'),false);assert.equal(wire.payload.referrer,'');assert.equal(wire.payload.url,'/one-day-reset/');assert.equal(wire.payload.data.card_type,'personal');assert.equal(e.requests[0].opts.referrerPolicy,'no-referrer');assert.equal(e.requests[0].opts.credentials,'omit');
 assert.equal('id' in wire.payload,false);assert.equal('screen' in wire.payload,false);
 e.a.track('PRIVATE_UNKNOWN_EVENT');assert.equal(e.requests.length,2);
 e.c.navigator.doNotTrack='1';e.a.track('share_intent');assert.equal(e.requests.length,2);
 e.c.navigator.doNotTrack='0';e.c.navigator.globalPrivacyControl=true;e.a.track('share_intent');assert.equal(e.requests.length,2);
-e.c.navigator.globalPrivacyControl=false;e.a.consent(false);e.a.track('share_intent');assert.equal(e.requests.length,2);
-e.a.consent(true);e.c.location.hostname='localhost';e.a.track('share_intent');assert.equal(e.requests.length,2);
+e.c.navigator.globalPrivacyControl=false;e.a.consent(false);e.a.track('share_intent');assert.equal(e.requests.length,2,'Opt-out stops requests');
+e.reload();e.a=e.c.window.ResetAnalytics;e.a.track('share_intent');assert.equal(e.requests.length,2,'Opt-out survives reload');
+e.a.consent(true);e.a.track('share_intent');assert.equal(e.requests.length,3,'Visitor can resume');
+e.c.location.hostname='localhost';e.a.track('share_intent');assert.equal(e.requests.length,3);
+const blocked=environment('',{enabled:true,websiteId:'00000000-0000-0000-0000-000000000001'});blocked.c.localStorage.setItem=()=>{throw Error('blocked');};blocked.c.localStorage.getItem=()=>{throw Error('blocked');};
+blocked.a.consent(false);const held=blocked.requests.length;blocked.a.track('share_intent');assert.equal(blocked.requests.length,held,'Opt-out holds in memory when storage is blocked');
 assert.equal(e.a.buildLink({source:'PRIVATE',campaign:'PRIVATE',content:'PRIVATE'}).includes('PRIVATE'),false);
 e.c.localStorage.setItem=()=>{throw Error('blocked');};e.c.localStorage.getItem=()=>{throw Error('blocked');};e.c.sessionStorage.setItem=()=>{throw Error('blocked');};e.c.sessionStorage.getItem=()=>{throw Error('blocked');};e.a.track('share_intent');assert.ok(e.a.report().groups[group]);
 e.a.clear();assert.equal(Object.keys(e.a.report().groups).length,0);
@@ -54,4 +60,4 @@ assert.equal(readOnly.a.report().in_app_browser.other.download_failed,1,'Readabl
 const sessionQuota=environment();sessionQuota.c.sessionStorage.setItem=()=>{throw Error('quota');};sessionQuota.a.track('snapshot_started');sessionQuota.a.track('snapshot_started');
 assert.equal(sessionQuota.a.report().groups['direct|none|unregistered|unregistered'].sessions.snapshot_started,1,'Session write failure preserves memory deduplication');
 assert.equal(environment('?s=__proto__').a.attribution().source,'direct','Only own short-link entries map');
-console.log('PASS: attribution, campaign visits, deduplication, idle expiry, stage denominators, local-only defaults, consent, privacy projection, DNT/GPC, hostname gate, unknown events, safe links, blocked storage, clearing.');
+console.log('PASS: attribution, campaign visits, deduplication, idle expiry, stage denominators, disabled-service silence, default sending with opt-out, privacy projection, DNT/GPC, hostname gate, unknown events, safe links, blocked storage, clearing.');

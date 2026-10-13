@@ -48,7 +48,12 @@
     }
     return result;
   }
-  function ready(){return config.enabled===true && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(config.websiteId) && location.hostname===config.hostname && read(CONSENT,false)===true && navigator.doNotTrack!=='1' && navigator.globalPrivacyControl!==true;}
+  // Opt-out model: anonymous events send by default once the owner enables the
+  // service. A stored `false` (or an in-memory refusal when storage is blocked)
+  // stops them; DNT/GPC always win.
+  let refused=false;
+  function optedOut(){if(refused)return true;try{return localStorage.getItem(CONSENT)==='false';}catch{return false;}}
+  function ready(){return config.enabled===true && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(config.websiteId) && location.hostname===config.hostname && !optedOut() && navigator.doNotTrack!=='1' && navigator.globalPrivacyControl!==true;}
   function payload(event,extra,attr){
     // Explicit projection: no form values, document title, referrer, user ID,
     // raw search/hash, screen size or arbitrary objects ever reach the wire.
@@ -65,8 +70,8 @@
       saveSession(session);
       fetch('https://gateway.umami.is/api/send',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',referrerPolicy:'no-referrer',keepalive:true,body:JSON.stringify(payload(name,extra,attr))}).catch(()=>{});
     };
-    // An opted-in measurement visit starts with the next actual action.
-    // This creates its denominator without replaying earlier operations.
+    // A visit that resumes sending after an opt-out starts with the next actual
+    // action. This creates its denominator without replaying earlier operations.
     if(event!=='visit_started')deliver('visit_started');
     if(['snapshot_completed','snapshot_workbench_entered'].includes(event))deliver('snapshot_started');
     deliver(event);
@@ -103,7 +108,7 @@
     url.searchParams.set('utm_medium','social');url.searchParams.set('utm_campaign',config.campaigns.includes(campaign)?campaign:'snapshot');url.searchParams.set('utm_content',config.contents.includes(content)?content:'question_card');return url.href;
   }
   function clear(){memory={};sessionMemory=null;try{localStorage.removeItem(KEY);sessionStorage.removeItem(SESSION);}catch{}}
-  function consent(value){write(CONSENT,value===true);}
+  function consent(value){refused=value!==true;write(CONSENT,value===true);}
   window.ResetAnalytics=Object.freeze({track,report:safeData,buildLink,clear,consent,ready,attribution:()=>({...incoming}),config});
   document.addEventListener?.('reset:download-failed',()=>track('download_failed'));
   document.addEventListener?.('reset:storage-unavailable',()=>track('storage_unavailable'));

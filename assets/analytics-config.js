@@ -1,8 +1,8 @@
-// Public configuration, never an API secret. External transmission stays off
-// until the site owner approves privacy changes and supplies a website ID.
+// Public configuration, never an API secret. The owner enabled anonymous
+// external events on 2026-10-13; visitors can stop them in 隱私與資料.
 window.RESET_ANALYTICS_CONFIG = Object.freeze({
-  enabled: false,
-  websiteId: '',
+  enabled: true,
+  websiteId: '40bbf9c5-47d0-49e8-8a05-891a63b10aa7',
   hostname: 'baabaa-works.github.io',
   pathname: '/one-day-reset/',
   campaigns: ['snapshot', 'launch_202610', 'evergreen'],
