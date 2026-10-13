@@ -26,7 +26,7 @@
   const stop=()=>{if(active){try{active.rec.stop();}catch{}}};
   const start=(field,btn,status)=>{
     const rec=new SR();
-    const session={rec,btn,base:field.value,finals:'',error:null};
+    const session={rec,btn,field,base:field.value,finals:'',error:null};
     rec.lang='zh-TW';rec.interimResults=true;
     // Android Chrome 在 continuous 模式會重複回傳累積結果，改成一次一句。
     rec.continuous=!/Android/i.test(navigator.userAgent);
@@ -70,6 +70,8 @@
     });
   };
   const scan=()=>{
+    // 欄位被重新渲染換掉時，立刻關掉麥克風。
+    if(active&&!active.field.isConnected){try{active.rec.abort();}catch{}}
     document.querySelectorAll('textarea,input[type="text"]').forEach(field=>{
       if(seen.has(field)||field.readOnly||field.disabled||field.closest('dialog'))return;
       attach(field);

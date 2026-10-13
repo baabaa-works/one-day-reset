@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),vm=require('node:vm');
 const cli=process.argv[2];if(!cli||!fs.existsSync(cli))throw Error('Usage: node scripts/verify.cjs <absolute-playwright-package>/cli.js');
 fs.mkdirSync('test-results',{recursive:true});
-const cases=[['browser-flow','testReport'],['mobile-check','mobileReport'],['analytics-browser','analyticsReport'],['entry-v2','entryV2Report'],['snapshot-v2','snapshotV2Report'],['share-v2','shareV2Report'],['resilience-v2','resilienceV2Report'],['workbench-v2','workbenchV2Report'],['diagnostics-v2','diagnosticsV2Report'],['final-mobile','finalMobileReport'],['storage-quota-v2','storageQuotaReport']];
+const cases=[['browser-flow','testReport'],['mobile-check','mobileReport'],['analytics-browser','analyticsReport'],['entry-v2','entryV2Report'],['snapshot-v2','snapshotV2Report'],['share-v2','shareV2Report'],['resilience-v2','resilienceV2Report'],['workbench-v2','workbenchV2Report'],['diagnostics-v2','diagnosticsV2Report'],['final-mobile','finalMobileReport'],['storage-quota-v2','storageQuotaReport'],['voice-v2','voiceV2Report']];
 const run=(args)=>{const result=cp.spawnSync(process.execPath,[cli,'cli','-s=reset-verification',...args],{encoding:'utf8',maxBuffer:16*1024*1024});const output=(result.stdout||'')+(result.stderr||'');if(result.status!==0||/### Error/.test(output)){fs.writeFileSync('test-results/verification-error.log',output);throw Error(output.slice(-4000));}return output;};
 for(const file of fs.readdirSync('assets').filter(f=>f.endsWith('.js')))new vm.Script(fs.readFileSync(path.join('assets',file),'utf8'),{filename:file});
 new vm.Script(fs.readFileSync('index.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1]);

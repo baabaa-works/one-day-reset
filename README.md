@@ -62,6 +62,8 @@ playwright-cli -s=mobile eval "window.mobileReport"
 
 2026-10-13 第二輪：318 項瀏覽器斷言通過，包含既有 67 項流程、8 項手機與分析檢查實際 21 項（舊文件記為 17），另有入口、三題、分享、全失敗降級、工作台、診斷與兩尺寸視覺驗證。Node 隱私／去重／受限儲存與實際 ICS 內容檢查通過，所有 JS 與 inline 語法通過。原生分享成功與取消使用模擬 API；Analytics 外部傳輸以攔截回應驗證，未上傳真實資料。實機與爬蟲限制見 [交付報告](docs/verification-report.md)。
 
+2026-10-13 語音輸入：新增 `tests/voice-v2.js`（以假的語音辨識驗證 17 項：首次說明、zh-TW、文字累加、字數上限、本機儲存、權限被拒提示、換題即停止收音、不寫入分析、無支援時不顯示按鈕），連同既有套件共 335 項瀏覽器斷言通過。真實麥克風辨識與 App 內建瀏覽器未驗證。
+
 可一次跑完整驗證，不新增依賴：先開本機預覽，再執行 `node scripts/verify.cjs <絕對路徑的-playwright-package>/cli.js`。會啟動獨立手機測試 context，保存 `test-results/verification.json` 與截圖，最後關閉測試瀏覽器。Windows 若瀏覽器受沙箱限制，需由允許啟動隔離 Edge 的環境執行。原有個別 CLI 命令仍可用。
 
 社群預覽圖片為 `assets/social-preview.png`。`og:image` 先以此 repository 的 GitHub Pages 預期位置設定；若實際站點使用自訂網域或其他 base URL，發布前需調整。尚未驗證線上爬蟲快取或實際曝光。

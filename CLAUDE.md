@@ -33,7 +33,7 @@ Each `tests/*.js` is an `async page => {...}` body that throws on the first fail
 There is no module system. `index.html` loads classic scripts that communicate through frozen `window` globals, and **load order matters**:
 
 1. Inline `<script>` in `index.html` — the original workbench (28 nodes, state, render, JSON import/export). Owns key `one-day-reset-tw-v1` and exposes `window.ResetWorkbench` (`read`, `move`, `checkpoints`, `bring`). It is the only extension boundary into the legacy state; `verify.cjs` regex-extracts the first `<script>…</script>` to syntax-check it, so keep it first and un-attributed.
-2. `analytics-config.js` → `analytics.js` → `privacy.js` → `calendar.js` → `local-ui.js` → `safety.js` → `workbench.js` → `growth.js`. Later files read earlier globals at load time (`ResetAnalytics`, `ResetCalendar`, `ResetLocalUI`, `ResetWorkbench`).
+2. `analytics-config.js` → `analytics.js` → `privacy.js` → `calendar.js` → `local-ui.js` → `safety.js` → `workbench.js` → `growth.js` → `voice.js` (self-contained; adds 「用說的」 mic buttons to text fields via a MutationObserver and writes through normal `input` events). Later files read earlier globals at load time (`ResetAnalytics`, `ResetCalendar`, `ResetLocalUI`, `ResetWorkbench`).
 3. `growth.js` renders the snapshot / share-card UI into `#growth` and toggles the legacy `#app`. `workbench.js` layers the second-round features (one-question-at-a-time mobile flow, six reminders → ICS, six-grid card, 7/30-day review) onto the legacy workbench via the `reset:workbench` event instead of editing its state format.
 4. `growth-tools.html` is a separate owner page (no login, local data only) built from `analytics-config.js` + `analytics.js` + `analytics-panel.js`. Not linked from the visitor home page.
 

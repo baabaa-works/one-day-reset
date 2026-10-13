@@ -15,6 +15,7 @@ async page => {
   await click('threads');check(await page.evaluate(()=>window.copied.includes('EDITED_INVITE')),'Threads offers verified copy fallback');
   await click('share');check(!(await page.locator('#growth').textContent()).includes('SHARE_PRIVATE'),'Default share page excludes answers');
   check((await page.locator('#g-card').getAttribute('aria-label')).includes('哪件小事'),'Default preview is general question');
+  await page.waitForTimeout(400); // 等通用卡的 toBlob 回呼落地，避免基準值取樣過早
   const count=await page.evaluate(()=>Object.values(ResetAnalytics.report().groups).reduce((n,r)=>n+(r.actions.card_generated||0),0));
   await page.locator('input[value="personal"]').check();
   check((await page.locator('#g-personal').inputValue()).includes('SHARE_PRIVATE'),'Explicit choice loads editable personal snapshot');
