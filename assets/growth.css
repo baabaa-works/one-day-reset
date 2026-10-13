@@ -5,7 +5,7 @@
 .growth-logo{font-size:18px;font-weight:750;letter-spacing:-.5px;text-decoration:none}
 .growth-logo span{display:inline-grid;place-items:center;border:2px solid var(--forest);width:28px;height:28px;border-radius:50%;margin-right:10px}
 .growth-logo{display:inline-flex;align-items:center;min-height:44px}
-.g-invitation{border-left:3px solid #718f59;padding-left:12px;color:#3c4c42}
+.g-invitation{color:#3c4c42;font-weight:600}
 #growth textarea::placeholder{color:#53665a}
 #growth .g-note a{display:inline-flex;align-items:center;min-height:44px}
 #growth input[type=text],#growth input[type=datetime-local]{width:100%;max-width:100%;min-height:48px;font-size:16px;padding:10px;border:1px solid #becdb4;background:white;border-radius:8px;color:#202b25}
@@ -16,11 +16,11 @@
 .g-identity-line{font-size:32px;line-height:1.5}.g-action-line{font-size:18px;font-weight:400}
 .g-line{display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;padding:12px 20px;text-decoration:none;font-weight:650;background:#263b2c;color:white}
 #growth select{font:inherit;min-height:48px;padding:8px;border-radius:8px;border:1px solid #becdb4;width:100%;background:white;color:#202b25}
-.g-storage-warning{padding:12px;border-left:3px solid #8b301d;font-size:14px;color:#69321f}
+.g-storage-warning{padding:12px;border:1px solid #d4c8bd;font-size:14px;color:#69321f}
 #reset-fallback{width:min(640px,calc(100% - 32px));max-height:90svh;overflow:auto;border:1px solid #becdb4;border-radius:16px;padding:24px;background:#fffefa;color:#202b25;font:16px/1.8 system-ui,"Microsoft JhengHei",sans-serif}
 #reset-fallback::backdrop{background:rgba(20,40,28,.65)}#reset-fallback h2{font-size:23px}#reset-fallback img{width:100%;height:auto;display:block}#reset-fallback textarea{width:100%;min-height:180px;font-size:16px}#reset-fallback button{min-height:48px;padding:12px 20px;border-radius:10px;margin-top:16px}
 @media(max-width:770px){.g-invite-actions>*{width:100%}}
-.app textarea,.app input[type=text],.app input[type=time],.app input[type=date]{font-size:16px!important;min-height:44px}.app .index-btn{min-height:44px;height:44px}.app .btn-sm,.app .nav-button,.app .checkbox-line{min-height:44px}.app .plan-card a,.app .footer-msg a{display:inline-flex;align-items:center;min-height:44px}.app .w-stop-note{color:#53665a;font-size:15px;border-left:3px solid #718f59;padding-left:12px}.app .question-index{box-shadow:none}.w-day-pager{display:none}.app .footer-msg,.app .helper-text,.app .think,.app .aside-note,.app .plan-card .missing{color:#53665a}
+.app textarea,.app input[type=text],.app input[type=time],.app input[type=date]{font-size:16px!important;min-height:44px}.app .index-btn{min-height:44px;height:44px}.app .btn-sm,.app .nav-button,.app .checkbox-line{min-height:44px}.app .plan-card a,.app .footer-msg a{display:inline-flex;align-items:center;min-height:44px}.app .w-stop-note{color:#53665a;font-size:15px}.app .question-index{box-shadow:none}.w-day-pager{display:none}.app .footer-msg,.app .helper-text,.app .think,.app .aside-note,.app .plan-card .missing{color:#53665a}
 .app .time-input{width:155px;max-width:100%}.app .time-card-top{flex-wrap:wrap}
 #w-import{width:min(600px,calc(100% - 32px));max-height:90svh;overflow:auto;border:1px solid #becdb4;border-radius:16px;padding:24px;background:#fffefa;color:#202b25;font:16px/1.8 system-ui,"Microsoft JhengHei",sans-serif}#w-import::backdrop{background:rgba(20,40,28,.65)}#w-import p{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:770px){.app .question-index{order:2}.app .time-card:not(.w-day-active){display:none}.w-day-pager{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}.w-day-pager p{width:100%}.app .question-card{min-height:0}.app .question-tools{flex-wrap:wrap}}
