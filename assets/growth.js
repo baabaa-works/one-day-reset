@@ -73,14 +73,14 @@
     return `<h1 tabindex="-1">留一個問題，給也在找方向的人。</h1><p>通用問題卡不含你的回答。選擇個人卡後，先預覽與編輯，再確認產生。</p><div class="g-share"><div><canvas id="g-card" role="img" aria-label="分享卡預覽"></canvas><p class="g-note">預覽就是將分享的圖片。${format==='story'?'1080 × 1920，適合限時動態':'1080 × 1350，適合 Threads 與 IG 貼文'}</p>${button('image-preview','開啟圖片，長按儲存')}</div><div><fieldset><legend>卡片內容</legend><label><input type="radio" name="cardMode" value="question" ${mode==='question'?'checked':''}>通用問題卡</label><label><input type="radio" name="cardMode" value="personal" ${mode==='personal'?'checked':''}>分享我的快照卡</label></fieldset><div ${mode==='personal'?'':'hidden'}><label for="g-personal">願意讓別人看見的文字（可編輯）</label><textarea id="g-personal" maxlength="600" placeholder="寫下願意分享的文字">${escape(personal)}</textarea><p class="g-note">這張卡會包含你的回答。最多 600 字；請看過左側預覽再確認。編輯內容只留在這一頁。</p>${button('confirm-personal',personalConfirmed?'已確認，可分享':'我確認預覽，產生這張卡')}</div><label for="g-platform">準備分享到</label><select id="g-platform"><option value="threads" ${platform==='threads'?'selected':''}>Threads</option><option value="instagram" ${platform==='instagram'?'selected':''}>Instagram</option></select><label for="g-format">圖片版型</label><select id="g-format"><option value="feed" ${format==='feed'?'selected':''}>貼文 · 4:5</option><option value="story" ${format==='story'?'selected':''}>限時動態 · 9:16</option></select>${invitationActions()}${invitationEditor()}<div class="g-actions">${button('download','存成圖片')}${button('copy-link','複製連結')}${button('native','開啟手機分享')}${button('copy-text','複製卡片文字＋連結')}</div><p class="g-note">IG 限動：存圖 → 限動 → 貼連結貼圖。先複製連結，再到 IG 加上貼圖；系統選單的 App 由裝置決定。</p><p class="g-status" id="g-status" role="status"></p><div id="g-manual" hidden><label for="g-copy">瀏覽器無法自動複製，請長按選取文字</label><textarea class="g-copy" id="g-copy" readonly></textarea></div><div class="g-actions">${button('return','回到'+(returnScreen==='result'?'我的快照':'首頁'),'g-link')}</div></div></div>`;
   }
   function render() {
-    root.innerHTML = `<div class="growth-shell">${nav()}${!canStore?'<p class="g-storage-warning" role="status">此瀏覽器無法儲存，回答暫留在這一頁的記憶體；重新整理或離開就會消失。結果頁可手動複製回答。</p>':''}${screen==='home'?home():screen==='quick'?quick():screen==='result'?result():share()}</div>`;
+    root.innerHTML = `<div class="growth-shell">${nav()}${!canStore?'<p class="g-storage-warning" role="status">此瀏覽器無法儲存，回答暫留在這一頁的記憶體；重新整理或離開就會消失。結果頁可手動複製回答。</p>':''}${screen==='home'?home():screen==='quick'?quick():screen==='result'?result():share()}${window.resetSafetyNote()}</div>`;
     if (screen === 'share') drawCard();
   }
   function lines(ctx, text, maxWidth) {
     const output = []; let line = '';
     for (const char of Array.from(text)) {
       if (char==='\n') {output.push(line);line='';continue;}
-      if (ctx.measureText(line+char).width>maxWidth && line) {output.push(line);line='';}
+      if (ctx.measureText(line+char).width>maxWidth && line && !/[，。？！]/.test(char)) {output.push(line);line='';}
       line += char;
     }
     output.push(line); return output;
@@ -119,11 +119,11 @@
   async function nativeShare() {
     if(!validCard())return;
     track('share_intent');
-    if (typeof navigator.share!=='function') {status('此瀏覽器未提供分享選單，可長按圖片或複製文字與網址。');localUI.imagePreview(document.getElementById('g-card'));return;}
+    if (typeof navigator.share!=='function') {analytics.track('share_failed');status('此瀏覽器未提供分享選單，可長按圖片或複製文字與網址。');localUI.imagePreview(document.getElementById('g-card'));return;}
     const payload={title:'One Day Reset｜90 秒人生快照',text:caption()};
     try{if(imageFile && navigator.canShare?.({files:[imageFile]}))payload.files=[imageFile];}catch{}
     try {await navigator.share(payload);track('native_share_resolved');status('已交給系統分享流程。是否發布，請在你選擇的 App 中確認。');}
-    catch(error){track(error.name==='AbortError'?'native_share_cancel':'native_share_error');status(error.name==='AbortError'?'已取消分享，卡片仍在這裡。':'分享未完成，可長按圖片或複製文字與網址。');if(error.name!=='AbortError')localUI.imagePreview(document.getElementById('g-card'));}
+    catch(error){track(error.name==='AbortError'?'native_share_cancel':'native_share_error');status(error.name==='AbortError'?'已取消分享，卡片仍在這裡。':'分享未完成，可長按圖片或複製文字與網址。');if(error.name!=='AbortError'){analytics.track('share_failed');localUI.imagePreview(document.getElementById('g-card'));}}
   }
   function workbench() {track('workbench_enter');if(screen==='quick'||screen==='result'||(screen==='share'&&returnScreen==='result'))analytics.track('snapshot_workbench_entered',{entry:screen});root.hidden=true;app.hidden=false;document.dispatchEvent(new Event('reset:workbench'));window.scrollTo(0,0);}
   root.addEventListener('click',event=>{

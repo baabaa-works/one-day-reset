@@ -21,7 +21,7 @@
   function download(filename,blob) {
     let url;
     try{url=URL.createObjectURL(blob);const a=document.createElement('a');if(!('download'in a))throw Error();a.href=url;a.download=filename;a.textContent='下載';document.body.append(a);try{a.click();}finally{a.remove();}return true;}
-    catch{return false;}
+    catch{document.dispatchEvent(new Event('reset:download-failed'));return false;}
     finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),30000);}
   }
   function storageAvailable() {

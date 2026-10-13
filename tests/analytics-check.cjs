@@ -39,4 +39,14 @@ e.a.consent(true);e.c.location.hostname='localhost';e.a.track('share_intent');as
 assert.equal(e.a.buildLink({source:'PRIVATE',campaign:'PRIVATE',content:'PRIVATE'}).includes('PRIVATE'),false);
 e.c.localStorage.setItem=()=>{throw Error('blocked');};e.c.localStorage.getItem=()=>{throw Error('blocked');};e.c.sessionStorage.setItem=()=>{throw Error('blocked');};e.c.sessionStorage.getItem=()=>{throw Error('blocked');};e.a.track('share_intent');assert.ok(e.a.report().groups[group]);
 e.a.clear();assert.equal(Object.keys(e.a.report().groups).length,0);
+const short=environment('?s=th-a');assert.equal(short.a.attribution().content,'post-a');assert.equal(short.a.attribution().source,'threads');
+const friend=environment('?s=f');assert.equal(friend.a.attribution().source,'share');assert.equal(friend.a.attribution().medium,'friend');
+const diagnostics=environment();diagnostics.c.navigator.userAgent='Instagram PRIVATE_UA';
+diagnostics.c.window.RESET_ANALYTICS_CONFIG={...diagnostics.c.window.RESET_ANALYTICS_CONFIG,enabled:true,websiteId:'00000000-0000-0000-0000-000000000001'};
+diagnostics.reload();diagnostics.a=diagnostics.c.window.ResetAnalytics;diagnostics.a.consent(true);
+const before=diagnostics.requests.length;
+for(const event of ['share_failed','download_failed','storage_unavailable'])diagnostics.a.track(event,{answer:'PRIVATE_ANSWER',userAgent:'PRIVATE_UA'});
+assert.equal(diagnostics.requests.length,before,'Failure diagnostics always remain local');
+assert.equal(diagnostics.a.report().in_app_browser.instagram.download_failed,1);
+assert(!JSON.stringify(diagnostics.a.report()).includes('PRIVATE'));
 console.log('PASS: attribution, campaign visits, deduplication, idle expiry, stage denominators, local-only defaults, consent, privacy projection, DNT/GPC, hostname gate, unknown events, safe links, blocked storage, clearing.');

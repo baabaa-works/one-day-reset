@@ -62,11 +62,11 @@
       const panel=document.createElement('section');panel.className='expand-box';panel.id='w-six-tools';
       panel.innerHTML=`<h2>這次先整理到這裡</h2><p>有留下的話就值得回頭看。六格卡只用你的原話，留白也可以；預設只在本機。</p><div class="report-tools">${btn('six-save','儲存六格卡到本機')}${btn('six-copy','複製六格卡')}${btn('six-download','下載六格卡')}${btn('six-print','列印六格卡')}${btn('blank-card','分享空白範本卡')}</div><p class="g-note">空白範本不含任何個人內容；圖上有快照入口網址。</p><h3>過一陣子回來看看</h3><p>${reviewQuestions.map(escape).join('<br>')}</p><div class="report-tools">${btn('return-reminders','7 天與 30 天後的行事曆提醒')}${btn('review','寫一份簡短回顧')}</div>`;content.append(panel);
     }
-    const footer=document.createElement('footer');footer.className='footer-msg';footer.innerHTML=`<p id="w-status" role="status"></p><p>靈感來自 <a href="https://letters.thedankoe.com/p/how-to-fix-your-entire-life-in-1" target="_blank" rel="noopener noreferrer">Dan Koe</a>，非官方、非授權的獨立工具。沒有 AI 替你回答。</p>${!ui.storageAvailable()?'<p>此瀏覽器無法儲存，筆記只暫留在這一頁；離開前請複製或下載備份。</p>':''}`;content.append(footer);
+    const footer=document.createElement('footer');footer.className='footer-msg';footer.innerHTML=`<p id="w-status" role="status"></p><p>靈感來自 <a href="https://letters.thedankoe.com/p/how-to-fix-your-entire-life-in-1" target="_blank" rel="noopener noreferrer">Dan Koe</a>，非官方、非授權的獨立工具。沒有 AI 替你回答。</p>${!ui.storageAvailable()?'<p>此瀏覽器無法儲存，筆記只暫留在這一頁；離開前請複製或下載備份。</p>':''}${window.resetSafetyNote()}`;content.append(footer);
     if(!ui.storageAvailable())document.getElementById('saveStatus').textContent='此瀏覽器無法儲存，筆記暫留在這一頁';
   }
   function pause(next='') {
-    const content=document.getElementById('content');content.innerHTML=`<section class="question-card"><h1 tabindex="-1">先把今天的筆記，<br>留在這裡。</h1><p>這個階段已走過一遍。未寫的地方可以先留白，之後回來再看。</p><div class="report-tools">${next?`<button type="button" class="btn btn-dark" data-w="continue" data-next="${next}">繼續下一段</button>`:''}${btn('tomorrow','明天早上再繼續')}${btn('resume','回到上次的地方')}${btn('six-copy','複製目前六格摘要')}</div><p id="w-status" role="status"></p></section>`;window.scrollTo(0,0);content.querySelector('h1').focus();
+    const content=document.getElementById('content');content.innerHTML=`<section class="question-card"><h1 tabindex="-1">先把今天的筆記，<br>留在這裡。</h1><p>這個階段已走過一遍。未寫的地方可以先留白，之後回來再看。</p><div class="report-tools">${next?`<button type="button" class="btn btn-dark" data-w="continue" data-next="${next}">繼續下一段</button>`:''}${btn('tomorrow','明天早上再繼續')}${btn('resume','回到上次的地方')}${btn('six-copy','複製目前六格摘要')}</div><p id="w-status" role="status"></p>${window.resetSafetyNote()}</section>`;window.scrollTo(0,0);content.querySelector('h1').focus();
   }
   function blankCard() {
     const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;canvas.setAttribute('aria-label','空白六格人生遊戲範本。不含個人回答。baabaa-works.github.io/one-day-reset/?s=f#snapshot');
@@ -79,7 +79,7 @@
     tools.querySelector('[data-w="blank-link"]').onclick=()=>ui.copy('先做三個問題，替日常留一個小起點。\n'+invitationURL());
   }
   function review() {
-    const content=document.getElementById('content');content.innerHTML=`<section class="question-card"><h1>回來看看，那個小起點</h1><p>沒有對錯，可略過。回顧只存在這台瀏覽器。</p>${reviewQuestions.map((q,i)=>`<label for="w-review-${i}">${escape(q)}</label><textarea id="w-review-${i}" data-w-review="${i}">${escape(options.review?.[i]||'')}</textarea>`).join('')}<div class="report-tools">${btn('plan','回到六格卡')}</div><p id="w-status" role="status"></p></section>`;window.scrollTo(0,0);
+    const content=document.getElementById('content');content.innerHTML=`<section class="question-card"><h1>回來看看，那個小起點</h1><p>沒有對錯，可略過。回顧只存在這台瀏覽器。</p>${reviewQuestions.map((q,i)=>`<label for="w-review-${i}">${escape(q)}</label><textarea id="w-review-${i}" data-w-review="${i}">${escape(options.review?.[i]||'')}</textarea>`).join('')}<div class="report-tools">${btn('plan','回到六格卡')}</div><p id="w-status" role="status"></p>${window.resetSafetyNote()}</section>`;window.scrollTo(0,0);
   }
   document.addEventListener('reset:workbench-render',mount);
   document.addEventListener('reset:phase-end',e=>pause(e.detail.next));

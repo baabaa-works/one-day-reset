@@ -17,9 +17,9 @@ node scripts/preview.cjs
 ## 私人資料與分享
 
 - 原工作台 key 與 JSON 格式保持 `one-day-reset-tw-v1`，不遷移、不覆寫。
-- 快照使用獨立 key `one-day-reset-snapshot-v1`，支援下载與清除。
-- 個人分享卡只顯示使用者另外輸入的文字，不自動取用快照或工作台回答，也不寫入網址／統計。個人卡欄位僅存在記憶體。
-- 分享卡是 PNG，提供 1080×1350 貼文、1080×1920 限動版型；原生分享不可用時，可下載、複製文字或複製網址。剪貼簿受限時顯示可手動複製文字。
+- 快照使用獨立 key `one-day-reset-snapshot-v1`，支援下載與清除。
+- 分享預設是通用問題卡。使用者明確選「分享我的快照卡」後才帶入自己的原話供預覽／編輯，再按確認才能匯出；編輯後需再次確認。個人卡欄位僅存在記憶體，不寫入網址／統計。圖上都印有可讀短網址。
+- 分享卡是 PNG，提供 1080×1350 貼文、1080×1920 限動版型。結果可直接開 LINE 邀請，也可編輯三種口吻並一鍵複製含連結的訊息。Threads 採複製文字備援；下載與分享受限時有長按 img，剪貼簿受限時顯示已選取文字。換瀏覽器不會帶走回答，離開前可複製或下載私人備份。
 - 完整工作台仍支援 JSON 匯入／匯出、Markdown 紀錄、行事曆與列印。不同裝置、不同網站 origin 的本機資料不互通。
 - 所有分析目前只在本機；Umami 介接預設關閉，須站方與訪客同意才可傳送匿名操作事件。沒有後端或產品依賴。
 
@@ -44,6 +44,8 @@ playwright-cli run-code --filename=tests/resilience-v2.js
 playwright-cli eval "window.resilienceV2Report"
 playwright-cli run-code --filename=tests/workbench-v2.js
 playwright-cli eval "window.workbenchV2Report"
+playwright-cli run-code --filename=tests/diagnostics-v2.js
+playwright-cli eval "window.diagnosticsV2Report"
 playwright-cli open http://127.0.0.1:4173 --browser=msedge
 playwright-cli run-code --filename=tests/browser-flow.js
 playwright-cli eval "window.testReport"
@@ -54,7 +56,7 @@ playwright-cli -s=mobile run-code --filename=tests/mobile-check.js
 playwright-cli -s=mobile eval "window.mobileReport"
 ```
 
-若全域 CLI 不存在，可使用安裝的 Playwright `node <playwright-package>/cli.js cli` 取代 `playwright-cli`。測試只操作隔離的本機測試瀏覽器，會清除该測試 context 的資料，不要對自己的日常瀏覽器執行。測試截圖／備份留在 `test-results/`（不 commit）。沒有產品依賴安裝、lint 或 build 命令。
+若全域 CLI 不存在，可使用安裝的 Playwright `node <playwright-package>/cli.js cli` 取代 `playwright-cli`。測試只操作隔離的本機測試瀏覽器，會清除該測試 context 的資料，不要對自己的日常瀏覽器執行。測試截圖／備份留在 `test-results/`（不 commit）。沒有產品依賴安裝、lint 或 build 命令。
 
 2026-10-13：67 項流程與相容性斷言、8 項手機觸控／28 節點／列印斷言、17 項 Analytics 瀏覽器斷言與 Node 計數／隱私測試通過。原生分享成功與取消使用模擬 API；Analytics 外部傳輸以攔截回應驗證，未上傳真實資料。不能證明實機 Threads／IG 發布成功或 Umami 真實帳號已收件。
 

@@ -2,10 +2,13 @@
   'use strict';
   const KEY='one-day-reset-analytics-v1', SESSION='one-day-reset-analytics-session-v1', CONSENT='one-day-reset-analytics-consent-v1';
   const config=window.RESET_ANALYTICS_CONFIG;
-  const events=['visit_started','snapshot_started','snapshot_completed','card_generated','share_intent','native_share_resolved','native_share_cancelled','native_share_failed','image_download_started','text_copied','link_copied','workbench_entered','snapshot_workbench_entered'];
+  const events=['visit_started','snapshot_started','snapshot_completed','card_generated','share_intent','native_share_resolved','native_share_cancelled','native_share_failed','image_download_started','text_copied','link_copied','workbench_entered','snapshot_workbench_entered','share_failed','download_failed','storage_unavailable'];
+  const localOnly=['share_failed','download_failed','storage_unavailable'];
+  const browsers=['threads','instagram','line','other'];
+  const browserClass=()=>{const ua=String(navigator.userAgent||'');return /Threads|Barcelona/i.test(ua)?'threads':/Instagram/i.test(ua)?'instagram':/\bLine\//i.test(ua)?'line':'other';};
   const origins=['threads','instagram','share','other','direct'];
   const properties={entry:['home','quick','result','share'],card_type:['question','personal'],format:['feed','story'],channel:['threads','instagram']};
-  let memory={}, sessionMemory=null;
+  let memory={}, sessionMemory=null, memoryOnly=false;
   function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch{return fallback;}}
   function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
   function sourceOf(params) {
@@ -16,7 +19,7 @@
   }
   function attribution(){
     const p=new URLSearchParams(location.search);
-    const short=config.shortLinks?.[p.get('s')];
+    const short=config.shortLinks&&Object.hasOwn(config.shortLinks,p.get('s'))?config.shortLinks[p.get('s')]:undefined;
     if(short)for(const [key,value]of Object.entries({utm_source:short.source,utm_medium:short.medium||'social',utm_campaign:short.campaign,utm_content:short.content}))if(!p.has(key))p.set(key,value);
     return {source:sourceOf(p),medium:['social','friend','share'].includes(p.get('utm_medium'))?p.get('utm_medium'):'none',campaign:config.campaigns.includes(p.get('utm_campaign'))?p.get('utm_campaign'):'unregistered',content:config.contents.includes(p.get('utm_content'))?p.get('utm_content'):'unregistered'};
   }
@@ -34,7 +37,8 @@
   function saveSession(session){sessionMemory=session;try{sessionStorage.setItem(SESSION,JSON.stringify(session));}catch{}}
   function safeProperties(input){const output={};for(const [key,values]of Object.entries(properties))if(values.includes(input?.[key]))output[key]=input[key];return output;}
   function safeData(){
-    const old=read(KEY,memory), result={version:1,groups:{}};
+    const old=memoryOnly?memory:read(KEY,memory), result={version:1,groups:{},in_app_browser:{}};
+    for(const browser of browsers)for(const event of localOnly){const n=old?.in_app_browser?.[browser]?.[event];if(Number.isSafeInteger(n)&&n>=0){if(!result.in_app_browser[browser])result.in_app_browser[browser]={};result.in_app_browser[browser][event]=n;}}
     for(const [key,row]of Object.entries(old?.groups||{}).slice(0,100)){
       const [source,medium,campaign,content]=key.split('|');
       if(!origins.includes(source)||!['social','friend','share','none'].includes(medium)||(!config.campaigns.includes(campaign)&&campaign!=='unregistered')||(!config.contents.includes(content)&&content!=='unregistered'))continue;
@@ -51,6 +55,7 @@
     return {type:'event',payload:{website:config.websiteId,hostname:config.hostname,url:config.pathname,title:'One Day Reset',language:'zh-TW',referrer:'',name:event,data:{...attr,...safeProperties(extra)}}};
   }
   function send(event,extra,attr){
+    if(localOnly.includes(event))return;
     if(!ready())return;
     const session=currentSession();
     const stages=['visit_started','snapshot_started','snapshot_completed','workbench_entered','snapshot_workbench_entered'];
@@ -77,12 +82,15 @@
     const row=data.groups[group]||(data.groups[group]={actions:{},sessions:{}});
     row.actions[event]=(row.actions[event]||0)+1;
     if(first){row.sessions[event]=(row.sessions[event]||0)+1;session.seen.push(event);}
-    memory=data;write(KEY,data);saveSession(session);
+    if(localOnly.includes(event)){const browser=browserClass();if(!data.in_app_browser[browser])data.in_app_browser[browser]={};data.in_app_browser[browser][event]=(data.in_app_browser[browser][event]||0)+1;}
+    memory=data;const stored=write(KEY,data);memoryOnly=!stored;saveSession(session);
+    if(!stored&&event!=='storage_unavailable')record('storage_unavailable');
     // One event per visit for conversion stages, repeated operations remain
     // distinguishable in the local action counts. Never report publication.
     send(event,extra,session.attribution);
   }
   function track(event,extra){
+    if(localOnly.includes(event)){record(event,extra);return;}
     // Ensure denominator even for a fresh session after 30 minutes of idle.
     if(event!=='visit_started'&&!currentSession().seen.includes('visit_started'))record('visit_started');
     if(event==='snapshot_completed'&&!currentSession().seen.includes('snapshot_started'))record('snapshot_started');
@@ -97,5 +105,7 @@
   function clear(){memory={};sessionMemory=null;try{localStorage.removeItem(KEY);sessionStorage.removeItem(SESSION);}catch{}}
   function consent(value){write(CONSENT,value===true);}
   window.ResetAnalytics=Object.freeze({track,report:safeData,buildLink,clear,consent,ready,attribution:()=>({...incoming}),config});
+  document.addEventListener?.('reset:download-failed',()=>track('download_failed'));
+  document.addEventListener?.('reset:storage-unavailable',()=>track('storage_unavailable'));
   if(document.documentElement?.dataset.analyticsTools!=='true')track('visit_started');
 })();

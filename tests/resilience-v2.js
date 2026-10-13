@@ -27,6 +27,7 @@ async page => {
       await test.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('denied','NotAllowedError');}}));await click('native');check(await test.locator('#reset-fallback img').isVisible(),`${name}: native rejection gives img`);await test.locator('#reset-fallback button').click();
       await test.screenshot({path:`test-results/resilience-${name}.png`,fullPage:true});
       check(!(await test.evaluate(()=>JSON.stringify(ResetAnalytics.report()))).includes('MEMORY_PRIVATE'),`${name}: analytics excludes answer with blocked storage`);
+      check(await test.evaluate(browser=>{const r=ResetAnalytics.report().in_app_browser[browser];return r.share_failed>=2&&r.download_failed>=2&&r.storage_unavailable>0;},name==='facebook'?'other':name),`${name}: local failure category without UA storage`);
       check(remote.length===0,`${name}: no external requests`);check(errors.length===0,`${name}: no uncaught exceptions`);
     } finally {await context.close();}
   }
