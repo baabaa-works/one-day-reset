@@ -10,7 +10,7 @@
 node scripts/preview.cjs
 ```
 
-開啟 http://127.0.0.1:4173/ 。直接進入快照使用 `/?utm_source=threads&utm_medium=social&utm_campaign=snapshot#snapshot`。也可直接開啟 `index.html`，但剪貼簿與原生分享能力依瀏覽器／安全環境而異。GitHub Pages 可直接發布這些靜態檔案，沒有 build 步驟。本任務未部署。
+開啟 http://127.0.0.1:4173/ 。直接進入快照使用 `/?utm_source=threads&utm_medium=social&utm_campaign=snapshot#snapshot`。也可直接開啟 `index.html`，但剪貼簿與原生分享能力依瀏覽器／安全環境而異。GitHub Pages 可直接發布這些靜態檔案，沒有 build 步驟。公開站點：https://baabaa-works.github.io/one-day-reset/ 。
 
 ## 私人資料與分享
 
@@ -23,7 +23,7 @@ node scripts/preview.cjs
 
 ## 查看成長數據
 
-首頁展開「隱私與這台裝置的使用統計」即可查看去重造訪漏斗、下載與複製比例、產生每篇貼文的 UTM 連結及匯出 JSON。這不是全站數據；跨訪客統計須取得同意並連接 Umami。事件定義、轉換分母、來源登記、免費方案與啟用步驟見 [Growth Analytics](docs/growth-analytics.md)。
+訪客首頁只提供快照、分享與「隱私與資料」。站方直接開啟 `growth-tools.html` 查看本機漏斗、產生 UTM 連結或匯出 JSON；首頁不提供管理入口。管理頁沒有登入保護，但只讀同一瀏覽器的本機統計，不展示私人回答，也不增加造訪數。全站數據仍須取得同意並連接 Umami，在其私人帳號查看。詳見 [Growth Analytics](docs/growth-analytics.md)。
 
 ## 驗證
 

@@ -7,6 +7,6 @@ http.createServer((req,res)=>{
   let file;
   try {file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));} catch {res.writeHead(400).end();return;}
   if (file===root) file=path.join(root,'index.html');
-  if(!file.startsWith(root+path.sep) || !['index.html','assets'].includes(path.relative(root,file).split(path.sep)[0])){res.writeHead(404).end();return;}
+  if(!file.startsWith(root+path.sep) || !['index.html','growth-tools.html','assets'].includes(path.relative(root,file).split(path.sep)[0])){res.writeHead(404).end();return;}
   fs.readFile(file,(error,data)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(data);});
 }).listen(4173,'127.0.0.1',()=>console.log('Preview: http://127.0.0.1:4173'));

@@ -2,7 +2,7 @@
 
 ## 已啟用：本機可驗證的數據
 
-首頁下方展開「隱私與這台裝置的使用統計」：查看來源／貼文漏斗，產生 UTM 連結，下載 JSON 或清除統計。資料只在目前瀏覽器；無法讀到其他訪客，也不是全站儀表板。舊版操作計數不混入新版造訪分母。
+站方直接開啟 `growth-tools.html`：查看本機漏斗、產生 UTM 連結、匯出或清除統計。訪客首頁只保留簡單隱私說明。管理頁不增加造訪數；沒有登入保護，但只讀取同一瀏覽器的本機統計，不展示私人回答，無法讀到其他訪客，也不是全站儀表板。日後全站數據在 Umami 的私人帳號查看。舊版操作計數不混入新版分母。
 
 一個造訪定義為同分頁、同來源與貼文、30 分鐘內持續操作。重新整理仍算同一次；30 分鐘無操作或換不同 UTM 組合另計。sessionStorage 只記當前來源、已發生階段與閒置時間，不產生 UUID、個人識別或跨站追蹤。不同分頁、裝置或受限儲存空間可能另計，不能推論獨立人數。禁止儲存時，計數僅保留於該頁記憶體。
 
@@ -26,7 +26,7 @@ JSON `sessions` 為有此行為的造訪數，`actions` 為實際操作次數。
 
 `utm_source=threads` 或 `instagram`、`utm_medium=social`、`utm_campaign=launch_202610`、`utm_content=threads_question_01`，尾端 `#snapshot` 直接進第一題。分享卡使用 `snapshot` 活動及 `question_card`／`personal_card`，完全不含卡片內容。
 
-每篇貼文用不同 content。新增公開貼文代號到 `assets/analytics-config.js` 的 contents，活動代號到 campaigns，再透過首頁連結產生器複製。代號使用小寫公開 slug，不放 email、姓名或私人句子。未知活動／貼文值會歸類 `unregistered` 並捨棄原值，未知來源歸 `other`。沒有 UTM 時僅根據 referrer hostname 的 Threads／Instagram 白名單或直接進站判斷，完整 referrer 不儲存。
+每篇貼文用不同 content。新增公開貼文代號到 `assets/analytics-config.js` 的 contents，活動代號到 campaigns，再透過管理頁連結產生器複製。代號使用小寫公開 slug，不放 email、姓名或私人句子。未知活動／貼文值會歸類 `unregistered` 並捨棄原值，未知來源歸 `other`。沒有 UTM 時僅根據 referrer hostname 的 Threads／Instagram 白名單或直接進站判斷，完整 referrer 不儲存。
 
 比較貼文先看 `snapshot_completed` 的造訪數與完成率；單次測試或小樣本不能判斷貼文勝負。若點入多、開始少，先檢查貼文與首頁承諾是否一致；若開始多、完成少，檢查題目難度／手機輸入；完成多、產卡少，可訪談分享價值，不應強迫分享。
 

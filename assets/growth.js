@@ -33,7 +33,7 @@
     root.querySelector('h1, h2')?.focus({preventScroll:true});
   }
   function home() {
-    return `<div class="g-hero"><div><p>給最近有點迷路的自己</p><h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><p class="g-intro">用三個問題，把心裡的模糊寫清楚。<br>看見現況，再留下一個這週能做的小行動。</p><div class="g-actions">${button('start', answers.some(Boolean) ? '繼續我的人生快照' : '開始 90 秒人生快照','g-primary')}</div><p class="g-note">約 90 秒起步，按自己的步調寫。免費、免登入。<br>回答只留在此瀏覽器，不會自動分享。</p></div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>有什麼不滿，<br>你已經把它當成<br>生活的正常部分？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','把這個問題送給朋友','g-link')}</footer><details><summary>隱私與這台裝置的使用統計</summary><p>快照與工作台分開儲存。分享卡不讀取私人回答；個人卡要由你另外輸入。清除瀏覽器資料會刪除紀錄，內建瀏覽器與一般瀏覽器的資料可能不同。完整工作台支援 JSON 備份。</p><p>下方僅是本機操作次數，依進站來源分類；不含反思內容，不含個人回答；預設僅存在本機，也無法證明社群貼文已發布。</p>${window.resetAnalyticsPanel()}${button('metrics-export','下載本機統計')}${button('metrics-clear','清除本機統計')}<p>想法需要更多時間？可使用依 Dan Koe 流程整理的完整工作台。這是自我反思工具，不提供心理評分。</p></details>`;
+    return `<div class="g-hero"><div><p>給最近有點迷路的自己</p><h1 tabindex="-1">最近很努力，<br>卻不知道<br>在往哪裡走？</h1><p class="g-intro">用三個問題，把心裡的模糊寫清楚。<br>看見現況，再留下一個這週能做的小行動。</p><div class="g-actions">${button('start', answers.some(Boolean) ? '繼續我的人生快照' : '開始 90 秒人生快照','g-primary')}</div><p class="g-note">約 90 秒起步，按自己的步調寫。免費、免登入。<br>回答只留在此瀏覽器，不會自動分享。</p></div><aside class="g-sample" aria-label="分享問題卡範例"><small>留一個問題給自己</small><blockquote>有什麼不滿，<br>你已經把它當成<br>生活的正常部分？</blockquote><div><p>先看見它，再決定下一步。</p><strong>One Day Reset</strong></div></aside></div><footer class="g-footer"><span>三個問題。一份只屬於你的筆記。</span>${button('share','分享給朋友','g-link')}</footer>${window.resetPrivacySettings()}`;
   }
   function quick() {
     const q = questions[step];
@@ -69,17 +69,17 @@
     const canvas = document.getElementById('g-card');
     canvas.width=1080;canvas.height=format==='story'?1920:1350;
     const c=canvas.getContext('2d'), h=canvas.height;
-    c.fillStyle='#244b8a';c.fillRect(0,0,1080,h);
-    c.fillStyle='#fcdd79';c.beginPath();c.arc(925,180,55,0,Math.PI*2);c.fill();
-    c.fillStyle='#eff5ff';c.font='32px "Microsoft JhengHei",sans-serif';
+    c.fillStyle='#263b2c';c.fillRect(0,0,1080,h);
+    c.fillStyle='#e3fa9c';c.beginPath();c.arc(925,180,55,0,Math.PI*2);c.fill();
+    c.fillStyle='#f5f8ef';c.font='32px "Microsoft JhengHei",sans-serif';
     c.fillText(mode==='personal'?'這週，給自己的小承諾':'留一個問題給自己',86,200);
     let size=mode==='question'?68:58, text=cardText() || '在右邊寫下，願意分享的那一句。';
     let rows;
     do {c.font=`700 ${size}px "Microsoft JhengHei",sans-serif`;rows=lines(c,text,880);if(rows.length*size*1.65< h-590)break;size-=2;} while(size>32);
     const start=(h-240-rows.length*size*1.65)/2+size;
     rows.forEach((row,i)=>c.fillText(row,86,start+i*size*1.65));
-    c.fillStyle='#fcdd79';c.fillRect(86,h-320,90,5);
-    c.fillStyle='#eff5ff';c.font='30px "Microsoft JhengHei",sans-serif';c.fillText('三個問題，給自己一個重新開始的地方。',86,h-260);
+    c.fillStyle='#e3fa9c';c.fillRect(86,h-320,90,5);
+    c.fillStyle='#f5f8ef';c.font='30px "Microsoft JhengHei",sans-serif';c.fillText('三個問題，給自己一個重新開始的地方。',86,h-260);
     c.font='700 42px sans-serif';c.fillText('One Day Reset',86,h-180);
     c.font='28px "Microsoft JhengHei",sans-serif';c.fillText('90 秒人生快照 · 免費體驗',86,h-120);
     canvas.setAttribute('aria-label',`分享卡預覽：${text}。One Day Reset，90 秒人生快照。`);

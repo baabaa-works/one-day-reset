@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-Hant" data-analytics-tools="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>One Day Reset｜成長管理工具</title>
+  <link rel="stylesheet" href="assets/growth.css">
+  <style>body{margin:0;font-family:system-ui,"Microsoft JhengHei",sans-serif;line-height:1.8}*{box-sizing:border-box}button,textarea,select{font:inherit}button{cursor:pointer}:focus-visible{outline:3px solid #536b3d;outline-offset:3px}a{color:inherit}</style>
+</head>
+<body>
+  <main id="growth"><div class="growth-shell"><a href="./">回到訪客首頁</a><h1>成長管理工具</h1><p>這裡集中放你的統計與推廣工具，不放在陌生訪客的體驗畫面。</p><p class="g-note">目前僅能讀取這台瀏覽器的本機統計。此靜態頁沒有登入保護，但無法讀取其他訪客的資料；全站數據需連接外部分析服務後，在該服務的私人帳號中查看。</p><section id="owner-panel" aria-label="來源統計與推廣連結"></section></div></main>
+  <script src="assets/analytics-config.js"></script>
+  <script src="assets/analytics.js"></script>
+  <script src="assets/analytics-panel.js"></script>
+  <script>document.getElementById('owner-panel').innerHTML=window.resetAnalyticsPanel();</script>
+</body>
+</html>

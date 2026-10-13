@@ -88,12 +88,12 @@
     record(event,extra);
   }
   function buildLink({source='threads',campaign='launch_202610',content='threads_question_01'}={}){
-    const url=new URL(location.href);url.search='';url.hash='snapshot';
+    const url=new URL('.',location.href);url.hash='snapshot';
     url.searchParams.set('utm_source',['threads','instagram'].includes(source)?source:'threads');
     url.searchParams.set('utm_medium','social');url.searchParams.set('utm_campaign',config.campaigns.includes(campaign)?campaign:'snapshot');url.searchParams.set('utm_content',config.contents.includes(content)?content:'question_card');return url.href;
   }
   function clear(){memory={};sessionMemory=null;try{localStorage.removeItem(KEY);sessionStorage.removeItem(SESSION);}catch{}}
   function consent(value){write(CONSENT,value===true);}
   window.ResetAnalytics=Object.freeze({track,report:safeData,buildLink,clear,consent,ready,attribution:()=>({...incoming}),config});
-  track('visit_started');
+  if(document.documentElement?.dataset.analyticsTools!=='true')track('visit_started');
 })();
