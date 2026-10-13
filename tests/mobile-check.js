@@ -17,6 +17,7 @@ async page => {
     localStorage.setItem('one-day-reset-tw-v1',JSON.stringify({view:'plan',morning,evening,dayDone:Object.fromEntries([1,2,3,4,5,6].map(i=>['d'+i,true])),constraints:'健康',quests:[{text:'行動一',time:'09:00'},{text:'行動二',time:'10:00'},{text:'行動三',time:'11:00'}]}));
   });
   await page.reload();
+  await page.locator('#growth [data-g="workbench"]').first().click();
   check(await page.locator('#sideProgressLabel').textContent()==='28 / 28 個核心節點','All 28 nodes still count');
   check(await page.locator('#sidePercent').textContent()==='100%','Full workspace reaches 100%');
   await page.evaluate(()=>{window.print=()=>{};});await page.locator('[data-action="print"]').click();

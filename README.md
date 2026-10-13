@@ -58,7 +58,9 @@ playwright-cli -s=mobile eval "window.mobileReport"
 
 若全域 CLI 不存在，可使用安裝的 Playwright `node <playwright-package>/cli.js cli` 取代 `playwright-cli`。測試只操作隔離的本機測試瀏覽器，會清除該測試 context 的資料，不要對自己的日常瀏覽器執行。測試截圖／備份留在 `test-results/`（不 commit）。沒有產品依賴安裝、lint 或 build 命令。
 
-2026-10-13：67 項流程與相容性斷言、8 項手機觸控／28 節點／列印斷言、17 項 Analytics 瀏覽器斷言與 Node 計數／隱私測試通過。原生分享成功與取消使用模擬 API；Analytics 外部傳輸以攔截回應驗證，未上傳真實資料。不能證明實機 Threads／IG 發布成功或 Umami 真實帳號已收件。
+2026-10-13 第二輪：318 項瀏覽器斷言通過，包含既有 67 項流程、8 項手機與分析檢查實際 21 項（舊文件記為 17），另有入口、三題、分享、全失敗降級、工作台、診斷與兩尺寸視覺驗證。Node 隱私／去重／受限儲存與實際 ICS 內容檢查通過，所有 JS 與 inline 語法通過。原生分享成功與取消使用模擬 API；Analytics 外部傳輸以攔截回應驗證，未上傳真實資料。實機與爬蟲限制見 [交付報告](docs/verification-report.md)。
+
+可一次跑完整驗證，不新增依賴：先開本機預覽，再執行 `node scripts/verify.cjs <絕對路徑的-playwright-package>/cli.js`。會啟動獨立手機測試 context，保存 `test-results/verification.json` 與截圖，最後關閉測試瀏覽器。Windows 若瀏覽器受沙箱限制，需由允許啟動隔離 Edge 的環境執行。原有個別 CLI 命令仍可用。
 
 社群預覽圖片為 `assets/social-preview.png`。`og:image` 先以此 repository 的 GitHub Pages 預期位置設定；若實際站點使用自訂網域或其他 base URL，發布前需調整。尚未驗證線上爬蟲快取或實際曝光。
 

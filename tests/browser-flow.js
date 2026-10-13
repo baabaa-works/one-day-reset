@@ -13,7 +13,8 @@ async page => {
   await page.screenshot({path:'test-results/mobile-home.png',fullPage:true});
   await click('start');
   await click('next');
-  check((await page.locator('#g-status').textContent()).includes('寫下'), 'Blank answer stays on question');
+  check((await page.locator('.g-flow').textContent()).includes('2 / 3'), 'Blank answer can advance without pressure');
+  await click('back');
   const privateAnswers=['PRIVATE_SENTINEL 不想再無目的加班','每天保留自己的時間','週三晚上散步十分鐘'];
   for (let i=0;i<3;i++){await page.locator('#g-answer').fill(privateAnswers[i]);await click('next');}
   check(await page.locator('.g-summary').isVisible(),'Three questions produce private summary');
@@ -26,9 +27,10 @@ async page => {
   const downloaded=await downloadWait;
   check(downloaded.suggestedFilename()==='one-day-reset.png','PNG download works');
   await downloaded.saveAs('test-results/download-card.png');
+  await page.locator('#reset-fallback button').last().click();
   await page.locator('input[value="personal"]').check();
   await click('download');
-  check((await page.locator('#g-status').textContent()).includes('先寫下'),'Personal card requires intentional input');
+  check((await page.locator('#g-status').textContent()).includes('先看過'),'Personal card requires intentional preview confirmation');
   const personal='這週，留一個晚上給自己。';
   await page.locator('#g-personal').fill(personal);
   await page.locator('#g-format').selectOption('story');
@@ -37,13 +39,14 @@ async page => {
   await page.locator('#g-card').screenshot({path:'test-results/long-personal-card.png'});
   await page.locator('#g-personal').fill(personal);
   await page.locator('#g-platform').selectOption('instagram');
+  await click('confirm-personal');
   await page.evaluate(()=>{window.shared=[];Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.shared.push({text:data.text,file:data.files?.[0]?.type});}});});
   await page.waitForTimeout(150);
   await click('native');
   await page.waitForFunction(()=>document.querySelector('#g-status').textContent.includes('交給'));
   const payload=await page.evaluate(()=>window.shared[0]);
   check(payload.file==='image/png' && payload.text.includes(personal) && !payload.text.includes('PRIVATE_SENTINEL'),'Native share sends only selected card and caption');
-  check(payload.text.includes('utm_source=instagram')&&!payload.text.includes(encodeURIComponent(personal)),'Source URL contains no personal reflection');
+  check(payload.text.includes('utm_source=share')&&payload.text.includes('utm_medium=friend')&&!payload.text.includes(encodeURIComponent(personal)),'Friend URL contains no personal reflection');
   await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('Cancelled','AbortError');}}));
   await click('native');
   await page.waitForFunction(()=>document.querySelector('#g-status').textContent.includes('取消'));
@@ -51,11 +54,12 @@ async page => {
   await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:undefined}));
   await click('native');
   check((await page.locator('#g-status').textContent()).includes('未提供'),'Unsupported native share offers fallback');
+  await page.locator('#reset-fallback button').last().click();
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied');}}}));
   await click('copy-link');
   await page.waitForFunction(()=>!document.querySelector('#g-manual').hidden);
   const sharedURL=await page.locator('#g-copy').inputValue();
-  check(sharedURL.includes('#snapshot') && sharedURL.includes('utm_source=instagram') && !sharedURL.includes('PRIVATE'),'Clipboard denial offers safe manual URL');
+  check(sharedURL.includes('#snapshot') && sharedURL.includes('utm_source=share') && !sharedURL.includes('PRIVATE'),'Clipboard denial offers safe manual URL');
   await click('copy-text');
   check((await page.locator('#g-copy').inputValue()).includes(personal),'Clipboard fallback contains intentional text');
   await page.evaluate(()=>{window.copied='';Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copied=text;}}});});
@@ -66,16 +70,20 @@ async page => {
   const direct=metric.groups['direct|none|unregistered|unregistered'];
   check(direct.sessions.snapshot_completed===1 && direct.actions.native_share_resolved===1 && !JSON.stringify(metric).includes('PRIVATE'),'Local metrics separate completion, intent and system handoff');
   await page.goto(sharedURL);
-  check(await page.locator('#g-answer').isVisible(),'Shared recipient enters quick experience directly');
-  check(await page.evaluate(()=>Object.entries(window.ResetAnalytics.report().groups).some(([key,row])=>key.startsWith('instagram|')&&row.sessions.snapshot_started===1)),'Source attribution records Instagram');
+  check(await page.locator('.g-invitation').isVisible(),'Shared recipient sees invitation and start');
+  await click('start');
+  check(await page.evaluate(()=>Object.entries(window.ResetAnalytics.report().groups).some(([key,row])=>key.startsWith('share|friend|')&&row.sessions.snapshot_started===1)),'Source attribution records friend visit');
   await page.goto(url+'?utm_source=threads#snapshot');
+  await click('start');
   check(await page.evaluate(()=>Object.entries(window.ResetAnalytics.report().groups).some(([key,row])=>key.startsWith('threads|')&&row.sessions.snapshot_started===1)),'Source attribution records Threads');
   const legacy={format:'one-day-reset-tw-v1',date:'2026-10-13',view:'morning',mi:0,ei:0,morning:{m1:'EXISTING_WORK'},evening:{e18:'不想繼續拖延'},dayNotes:{d1:'筆記'},dayDone:{d1:true},times:{d1:'12:00'},bonus:{b1:'保持真實'},constraints:'保留睡眠',quests:[{text:'寫第一版',time:'09:00',done:true},{text:'散步',time:'18:00',done:false},{text:'',time:'19:00',done:false}]};
   await page.evaluate(data=>localStorage.setItem('one-day-reset-tw-v1',JSON.stringify(data)),legacy);
   await page.goto(url);
+  await click('workbench');
   check(await page.locator('#app').isVisible(),'Returning user resumes workbench');
   check(await page.locator('#focusedAnswer').inputValue()==='EXISTING_WORK','Legacy answer restored');
   await page.locator('.g-workbench-home').click();await click('start');
+  await click('back');await click('back');
   check(await page.locator('#g-answer').inputValue()===privateAnswers[0],'Snapshot draft persists separately');
   await click('workbench');
   check(await page.locator('#focusedAnswer').inputValue()==='EXISTING_WORK','Quick flow never overwrites workspace');
@@ -83,6 +91,7 @@ async page => {
   for(let i=0;i<14;i++){await page.locator(`[data-question-number="${i}"]`).click();check(await page.locator('.question-card').isVisible(),`Morning question ${i+1} renders`);}
   await page.locator('#nav [data-view="day"]').click();
   check(await page.locator('.time-card').count()===6,'Six daytime checkpoints preserved');
+  await page.locator('[data-w="day-next"]').click();
   await page.locator('[data-note="d2"]').fill('新增觀察');await page.locator('[data-done="d2"]').check();
   await page.locator('#nav [data-view="evening"]').click();
   for(let i=0;i<7;i++){await page.locator(`[data-question-number="${i}"]`).click();check(await page.locator('.question-card').isVisible(),`Evening question ${i+1} renders`);}

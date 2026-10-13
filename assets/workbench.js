@@ -84,6 +84,7 @@
   document.addEventListener('reset:workbench-render',mount);
   document.addEventListener('reset:phase-end',e=>pause(e.detail.next));
   document.addEventListener('reset:review',review);
+  document.addEventListener('reset:workbench-cleared',()=>{options={prompts:{},skipped:{}};try{localStorage.removeItem(KEY);localStorage.removeItem(CARD);}catch{document.dispatchEvent(new Event('reset:storage-unavailable'));}});
   document.addEventListener('reset:snapshot-import',e=>{
     const data=e.detail,current=work.read(),mapping=[['m1','現況',data.answers[0]],['m13','願景',data.answers[1]],['m15','本週行動',data.answers[2]],['m14','身份句',data.identity]];
     const dialog=document.createElement('dialog');dialog.id='w-import';dialog.setAttribute('aria-label','快照帶入預覽');

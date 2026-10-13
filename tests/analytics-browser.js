@@ -10,7 +10,7 @@ async page => {
   check(await page.locator('.g-footer [data-g="share"]').textContent()==='分享給朋友','Requested share label');
   await page.locator('.g-privacy summary').click();check((await page.locator('.g-privacy').textContent()).includes('你的回答只留在此瀏覽器'),'Visitors retain privacy explanation');
   check(await page.locator('[data-privacy="allow"]').count()===0,'Disabled service shows no unused consent controls');
-  await page.goto(base+'growth-tools.html');check(await page.locator('.g-analytics table').isVisible(),'Owner tools have local funnel');check(await page.evaluate(()=>Object.keys(window.ResetAnalytics.report().groups).length===1),'Owner page does not count as new visit');
+  await page.goto(base+'growth-tools.html');check(await page.getByRole('table',{name:'依來源與貼文的造訪漏斗'}).isVisible(),'Owner tools have local funnel');check(await page.evaluate(()=>Object.keys(window.ResetAnalytics.report().groups).length===1),'Owner page does not count as new visit');
   await page.locator('#a-source').selectOption('instagram');await page.locator('#a-campaign').selectOption('evergreen');await page.locator('#a-content').selectOption('ig_question_01');await page.locator('[data-analytics="build"]').click();
   const link=await page.locator('#a-link').inputValue();check(link.startsWith(base+'?')&&!link.includes('growth-tools')&&link.includes('utm_content=ig_question_01')&&link.includes('#snapshot'),'Owner links send friends to visitor experience');
   for(const width of [360,903,1440]){await page.setViewportSize({width,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Owner page fits ${width}px`);}

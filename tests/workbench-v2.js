@@ -34,5 +34,7 @@ async page => {
   await w('review');check(await page.locator('[data-w-review]').count()===3,'Three optional local review questions');await page.locator('#w-review-0').fill('PRIVATE_REVIEW');
   await page.goto(base+'#review');check(await page.locator('#w-review-0').inputValue()==='PRIVATE_REVIEW','Review deep link restores local words');
   await page.locator('#nav [data-view="day"]').click();await page.setViewportSize({width:1440,height:1000});check(await page.locator('.time-card:visible').count()===6,'Desktop retains all checkpoint overview');
+  await page.locator('#nav [data-view="plan"]').click();await page.evaluate(()=>window.confirm=()=>true);await page.locator('[data-action="reset"]').click();
+  check(await page.evaluate(()=>!localStorage.getItem('one-day-reset-game-card-v1')&&!JSON.parse(localStorage.getItem('one-day-reset-workbench-options-v1')||'{}').review&&Object.keys(ResetWorkbench.read().morning).length===0),'Workbench clear removes cached six-grid and private review');
   await page.evaluate(report=>window.workbenchV2Report=report,{passed:checks.length,checks});
 }

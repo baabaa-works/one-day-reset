@@ -49,4 +49,9 @@ for(const event of ['share_failed','download_failed','storage_unavailable'])diag
 assert.equal(diagnostics.requests.length,before,'Failure diagnostics always remain local');
 assert.equal(diagnostics.a.report().in_app_browser.instagram.download_failed,1);
 assert(!JSON.stringify(diagnostics.a.report()).includes('PRIVATE'));
+const readOnly=environment();readOnly.c.localStorage.setItem=()=>{throw Error('quota');};readOnly.a.track('download_failed');
+assert.equal(readOnly.a.report().in_app_browser.other.download_failed,1,'Readable stale storage must not hide memory diagnostics');
+const sessionQuota=environment();sessionQuota.c.sessionStorage.setItem=()=>{throw Error('quota');};sessionQuota.a.track('snapshot_started');sessionQuota.a.track('snapshot_started');
+assert.equal(sessionQuota.a.report().groups['direct|none|unregistered|unregistered'].sessions.snapshot_started,1,'Session write failure preserves memory deduplication');
+assert.equal(environment('?s=__proto__').a.attribution().source,'direct','Only own short-link entries map');
 console.log('PASS: attribution, campaign visits, deduplication, idle expiry, stage denominators, local-only defaults, consent, privacy projection, DNT/GPC, hostname gate, unknown events, safe links, blocked storage, clearing.');

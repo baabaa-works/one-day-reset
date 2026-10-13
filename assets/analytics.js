@@ -8,7 +8,7 @@
   const browserClass=()=>{const ua=String(navigator.userAgent||'');return /Threads|Barcelona/i.test(ua)?'threads':/Instagram/i.test(ua)?'instagram':/\bLine\//i.test(ua)?'line':'other';};
   const origins=['threads','instagram','share','other','direct'];
   const properties={entry:['home','quick','result','share'],card_type:['question','personal'],format:['feed','story'],channel:['threads','instagram']};
-  let memory={}, sessionMemory=null, memoryOnly=false;
+  let memory={}, sessionMemory=null, memoryOnly=false, sessionMemoryOnly=false;
   function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback;}catch{return fallback;}}
   function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
   function sourceOf(params) {
@@ -27,14 +27,14 @@
   const groupOf=a=>[a.source,a.medium,a.campaign,a.content].join('|');
   function currentSession(){
     const now=Date.now();let previous;
-    try{previous=JSON.parse(sessionStorage.getItem(SESSION)||'null');}catch{previous=sessionMemory;}
+    try{previous=sessionMemoryOnly?sessionMemory:JSON.parse(sessionStorage.getItem(SESSION)||'null');}catch{previous=sessionMemory;}
     const same=previous && groupOf(previous.attribution||{})===groupOf(incoming) && Number.isFinite(previous.last) && now-previous.last<30*60*1000;
     const session=same?previous:{last:now,attribution:incoming,seen:[]};
     session.last=now;session.seen=Array.isArray(session.seen)?session.seen.filter(e=>events.includes(e)):[];
     session.externalSeen=Array.isArray(session.externalSeen)?session.externalSeen.filter(e=>events.includes(e)):[];
     return session;
   }
-  function saveSession(session){sessionMemory=session;try{sessionStorage.setItem(SESSION,JSON.stringify(session));}catch{}}
+  function saveSession(session){sessionMemory=session;try{sessionStorage.setItem(SESSION,JSON.stringify(session));sessionMemoryOnly=false;}catch{sessionMemoryOnly=true;}}
   function safeProperties(input){const output={};for(const [key,values]of Object.entries(properties))if(values.includes(input?.[key]))output[key]=input[key];return output;}
   function safeData(){
     const old=memoryOnly?memory:read(KEY,memory), result={version:1,groups:{},in_app_browser:{}};

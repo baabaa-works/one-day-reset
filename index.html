@@ -353,7 +353,7 @@ document.addEventListener('click',e=>{
   const index=e.target.closest('[data-question-number]');if(index){const i=Number(index.dataset.questionNumber);if(state.view==='morning')state.mi=i;else if(state.view==='evening')state.ei=i;save();render();return}
   const stepButton=e.target.closest('[data-step]');if(stepButton){step(Number(stepButton.dataset.step));return}
   const act=e.target.closest('[data-action]');if(!act)return;
-  switch(act.dataset.action){case'calendar':calendar();break;case'export-json':download('人生重整備份-'+state.date+'.json',JSON.stringify({format:'one-day-reset-tw-v1',...state},null,2),'application/json;charset=utf-8');break;case'export-md':download('人生重整紀錄-'+state.date+'.md',markdown(),'text/markdown;charset=utf-8');break;case'import':el('importFile').click();break;case'print':printReport();break;case'reset':if(confirm('要清空所有回答、白天觀察和任務嗎？此動作無法復原。\n\n建議先下載 JSON 備份。')){state=defaults();save();render();window.scrollTo(0,0)}break;}
+  switch(act.dataset.action){case'calendar':calendar();break;case'export-json':download('人生重整備份-'+state.date+'.json',JSON.stringify({format:'one-day-reset-tw-v1',...state},null,2),'application/json;charset=utf-8');break;case'export-md':download('人生重整紀錄-'+state.date+'.md',markdown(),'text/markdown;charset=utf-8');break;case'import':el('importFile').click();break;case'print':printReport();break;case'reset':if(confirm('要清空所有回答、白天觀察和任務嗎？此動作無法復原。\n\n建議先下載 JSON 備份。')){state=defaults();document.dispatchEvent(new Event('reset:workbench-cleared'));save();render();window.scrollTo(0,0)}break;}
 });
 document.addEventListener('input',e=>{
   const t=e.target;
