@@ -17,7 +17,7 @@
   function attribution(){
     const p=new URLSearchParams(location.search);
     const short=config.shortLinks?.[p.get('s')];
-    if(short)for(const [key,value]of Object.entries({utm_source:short.source,utm_medium:'social',utm_campaign:short.campaign,utm_content:short.content}))if(!p.has(key))p.set(key,value);
+    if(short)for(const [key,value]of Object.entries({utm_source:short.source,utm_medium:short.medium||'social',utm_campaign:short.campaign,utm_content:short.content}))if(!p.has(key))p.set(key,value);
     return {source:sourceOf(p),medium:['social','friend','share'].includes(p.get('utm_medium'))?p.get('utm_medium'):'none',campaign:config.campaigns.includes(p.get('utm_campaign'))?p.get('utm_campaign'):'unregistered',content:config.contents.includes(p.get('utm_content'))?p.get('utm_content'):'unregistered'};
   }
   const incoming=attribution();

@@ -79,3 +79,7 @@
 ## C 驗證
 
 三題 v2 的任一題跳過、留白結果、兩標籤上限、不代答、起手句可改、身份／時間／步驟暫存、返回、身份結果與空身份退回、私人行動 ICS、兩尺寸無溢出、網址／分析無回答通過。calendar Node 驗證涵蓋日期／時間無效值、午夜跨日、UTF-8 75 octet 折行、跳脫、Asia/Taipei 與實際下載行動文字。快照仍用同 key 與 answers 陣列，只新增 tags、identity、scheduledAt、step。D/E 再補受限下載與記憶體備援。
+
+## D 驗證
+
+21 項分享流程斷言通過：結果直接 LINE、精確 friend UTM、邀請不含回答、編輯與口吻、一鍵複製、Threads 複製備援、通用卡與明確個人卡邊界、未確認禁止匯出、編輯取消確認、PNG 與原生分享模擬、兩尺寸與朋友短網址入口。已檢視圖上的可讀短網址。LINE 格式來自 [官方 Share buttons](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/) 的 url / text 範例，使用自訂文字連結，不載入第三方 plugin script。Threads 官方 web intents 文件無法讀取，未採用未經證實的 intent，採要求允許的複製備援。圖片下載後一律同時提供 img 長按預覽，因瀏覽器無法判定相簿儲存成功。

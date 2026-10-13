@@ -13,6 +13,12 @@
 #growth .g-tags [aria-pressed=true]{background:#263b2c;color:white}
 #growth .g-starters{margin:0 0 16px}.g-starters button{display:block;margin:12px 0;white-space:normal;text-align:left;width:100%}
 .g-result-line{font-size:22px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700}
+.g-line{display:inline-flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;padding:12px 20px;text-decoration:none;font-weight:650;background:#263b2c;color:white}
+#growth select{font:inherit;min-height:48px;padding:8px;border-radius:8px;border:1px solid #becdb4;width:100%;background:white;color:#202b25}
+.g-storage-warning{padding:12px;border-left:3px solid #8b301d;font-size:14px;color:#69321f}
+#reset-fallback{width:min(640px,calc(100% - 32px));max-height:90svh;overflow:auto;border:1px solid #becdb4;border-radius:16px;padding:24px;background:#fffefa;color:#202b25;font:16px/1.8 system-ui,"Microsoft JhengHei",sans-serif}
+#reset-fallback::backdrop{background:rgba(20,40,28,.65)}#reset-fallback h2{font-size:23px}#reset-fallback img{width:100%;height:auto;display:block}#reset-fallback textarea{width:100%;min-height:180px;font-size:16px}#reset-fallback button{min-height:48px;padding:12px 20px;border-radius:10px;margin-top:16px}
+@media(max-width:770px){.g-invite-actions>*{width:100%}}
 #growth button{border:0;font-weight:650;min-height:48px;border-radius:12px;padding:12px 20px;font-size:16px}
 #growth .g-primary{background:var(--forest);color:white}
 #growth .g-secondary{background:var(--white);color:var(--forest);border:1px solid #becdb4}
