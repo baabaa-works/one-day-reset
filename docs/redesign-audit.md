@@ -83,3 +83,9 @@
 ## D 驗證
 
 21 項分享流程斷言通過：結果直接 LINE、精確 friend UTM、邀請不含回答、編輯與口吻、一鍵複製、Threads 複製備援、通用卡與明確個人卡邊界、未確認禁止匯出、編輯取消確認、PNG 與原生分享模擬、兩尺寸與朋友短網址入口。已檢視圖上的可讀短網址。LINE 格式來自 [官方 Share buttons](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/) 的 url / text 範例，使用自訂文字連結，不載入第三方 plugin script。Threads 官方 web intents 文件無法讀取，未採用未經證實的 intent，採要求允許的複製備援。圖片下載後一律同時提供 img 長按預覽，因瀏覽器無法判定相簿儲存成功。
+
+## E 驗證
+
+Instagram、LINE、Facebook、Threads 四個獨立手機 context，各同時禁止 localStorage（包含讀、寫、移除）、分享、剪貼簿、下載，合計 48 項斷言通過。包含記憶體警語、完成與閱讀、已選取私人回答、手動 JSON、原生分享缺少／拒絕、下載失敗的 img、通用邀請、零外部請求與零 JS 錯誤。`test-results/resilience-{instagram|line|facebook|threads}.png` 保留證據。UA 只用來模擬 App，不決定降級功能。
+
+仍不能由模擬證明實機長按選單與相簿操作成功，也不能證明 LINE 發送或 Threads 發文；下載 click 無法偵測某些 App 的靜默丟棄，因此無論 click 是否拋錯都提供可長按的 img。若連長按存圖也被 App 限制，畫面提示可截圖。
